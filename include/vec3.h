@@ -67,7 +67,8 @@ struct Vec3
 
     static Vec3 normalize(const Vec3 &v)
     {
-        return v / v.norm();
+        double n = v.norm();
+        return Vec3(v.x / n, v.y / n, v.z / n);
     }
 
     static double dot(const Vec3 &u, const Vec3 &v)

@@ -19,3 +19,4 @@ Tested on:
 
 - [spdlog](https://github.com/gabime/spdlog)
 - [stb](https://github.com/nothings/stb)
+- [yaml-cpp](https://github.com/jbeder/yaml-cpp)

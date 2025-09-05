@@ -1,14 +1,59 @@
+
 #include <vector>
 #include "spdlog/spdlog.h"
 #include "stb_image_write.h"
+#include "yaml-cpp/yaml.h"
+#include "yaml-cpp/exceptions.h"
+#include "vec3.h"
+#include "ray.h"
+#include "camera.h"
 
-int main()
+Color3 ray_color(const Ray &r) {
+    // For now, return a gradient based on ray direction (simple background)
+    Vec3 unit_direction = Vec3::normalize(r.direction);
+    double t = 0.5 * (unit_direction.y + 1.0);
+    return (1.0 - t) * Color3(1.0, 1.0, 1.0) + t * Color3(0.5, 0.7, 1.0);
+}
+
+int main(int argc, char **argv)
 {
-    spdlog::info("Starting image generation...");
+    if (argc < 2)
+    {
+        spdlog::error("Usage: {} <config.yaml>", argv[0]);
+        return 0;
+    }
 
-    constexpr int image_width = 256;
-    constexpr int image_height = 256;
-    constexpr int channels = 3;
+    const char *config_file = argv[1];
+    YAML::Node config;
+    try
+    {
+        config = YAML::LoadFile(config_file);
+    }
+    catch (const YAML::BadFile &e)
+    {
+        spdlog::error("Failed to load config file {}: {}", config_file, e.what());
+        return 1;
+    }
+
+    int image_width;
+    int image_height;
+    try
+    {
+        image_width = config["image_width"].as<int>();
+        image_height = config["image_height"].as<int>();
+    }
+    catch (const YAML::RepresentationException &e)
+    {
+        spdlog::error("Error parsing config file: {}", e.what());
+        return 1;
+    }
+
+    spdlog::info("Image dimensions: {}x{}", image_width, image_height);
+    const int channels = 3;
+
+    Camera camera(image_width, image_height);
+    camera.set_position(Vec3(0, 0, 0));
+    camera.look_at(Vec3(0, 0, -1));
 
     std::vector<unsigned char> pixels(image_width * image_height * channels);
 
@@ -16,17 +61,13 @@ int main()
     {
         for (int i = 0; i < image_width; ++i)
         {
-            auto r = double(i) / (image_width - 1);
-            auto g = double(j) / (image_height - 1);
-            auto b = 0.0;
-
-            int ir = static_cast<int>(255.999 * r);
-            int ig = static_cast<int>(255.999 * g);
-            int ib = static_cast<int>(255.999 * b);
-
-            pixels[channels * (j * image_width + i) + 0] = ir;
-            pixels[channels * (j * image_width + i) + 1] = ig;
-            pixels[channels * (j * image_width + i) + 2] = ib;
+            double u = double(i + 0.5) / image_width;
+            double v = 1.0 - double(j + 0.5) / image_height; // flip v for image coordinates
+            Ray r = camera.get_ray(u, v);
+            Color3 pixel_color = ray_color(r);
+            pixels[channels * (j * image_width + i) + 0] = static_cast<unsigned char>(255.999 * pixel_color.x);
+            pixels[channels * (j * image_width + i) + 1] = static_cast<unsigned char>(255.999 * pixel_color.y);
+            pixels[channels * (j * image_width + i) + 2] = static_cast<unsigned char>(255.999 * pixel_color.z);
         }
     }
 

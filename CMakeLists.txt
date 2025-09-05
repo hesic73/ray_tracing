@@ -17,6 +17,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(spdlog)
 
+# yaml-cpp
+FetchContent_Declare(
+  yaml-cpp
+  GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+  GIT_TAG 0.8.0
+)
+FetchContent_MakeAvailable(yaml-cpp)
+
+
+
 file(GLOB SRC_FILES "src/*.cpp")
 add_executable(ray_tracing main.cpp ${SRC_FILES})
 
@@ -32,5 +42,6 @@ target_link_libraries(
     ray_tracing 
     PRIVATE
     spdlog::spdlog
+    yaml-cpp::yaml-cpp
 )
 
