@@ -1,13 +1,13 @@
 
 #include <vector>
+#include <memory>
+
 #include "spdlog/spdlog.h"
 #include "stb_image_write.h"
 #include "yaml-cpp/yaml.h"
 #include "yaml-cpp/exceptions.h"
 
 #include "vec3.h"
-#include "ray.h"
-#include "color.h"
 #include "camera.h"
 #include "common.h"
 
@@ -15,21 +15,7 @@
 #include "hittable_list.h"
 #include "sphere.h"
 
-Color ray_color(const Ray &r, const Hittable &world)
-{
-    HitRecord hit_record = HitRecord::default_record();
-    if (world.hit(r, Interval::interval_zero_infinity(), hit_record))
-    {
-        Vec3 N = hit_record.normal;
-        return Color::from_float(static_cast<FloatType>(0.5) * (N.x + static_cast<FloatType>(1.0)),
-                                 static_cast<FloatType>(0.5) * (N.y + static_cast<FloatType>(1.0)),
-                                 static_cast<FloatType>(0.5) * (N.z + static_cast<FloatType>(1.0)));
-    }
-
-    Vec3 unit_direction = Vec3::normalize(r.direction);
-    auto a = static_cast<FloatType>(0.5) * (unit_direction.y + static_cast<FloatType>(1.0));
-    return Color::from_vec3((static_cast<FloatType>(1.0) - a) * Vec3(static_cast<FloatType>(1.0), static_cast<FloatType>(1.0), static_cast<FloatType>(1.0)) + a * Vec3(static_cast<FloatType>(0.5), static_cast<FloatType>(0.7), static_cast<FloatType>(1.0)));
-}
+#include "my_renderer.h"
 
 int main(int argc, char **argv)
 {
@@ -53,12 +39,14 @@ int main(int argc, char **argv)
 
     int image_width;
     int image_height;
+    int samples_per_pixel;
     FloatType fov;
     try
     {
         image_width = config["image_width"].as<int>();
         image_height = config["image_height"].as<int>();
         fov = config["fov"].as<FloatType>();
+        samples_per_pixel = config["samples_per_pixel"].as<int>();
     }
     catch (const YAML::RepresentationException &e)
     {
@@ -68,6 +56,7 @@ int main(int argc, char **argv)
 
     spdlog::info("Image dimensions: {}x{}", image_width, image_height);
     spdlog::info("Field of view: {}", fov);
+    spdlog::info("Samples per pixel: {}", samples_per_pixel);
 
     constexpr int channels = 3;
 
@@ -81,19 +70,9 @@ int main(int argc, char **argv)
 
     std::vector<unsigned char> pixels(image_width * image_height * channels);
 
-    for (int j = 0; j < image_height; ++j)
-    {
-        for (int i = 0; i < image_width; ++i)
-        {
-            FloatType u = static_cast<FloatType>(i + 0.5) / image_width;
-            FloatType v = static_cast<FloatType>(1.0) - static_cast<FloatType>(j + 0.5) / image_height; // flip v for image coordinates
-            Ray r = camera.get_ray(u, v);
-            Color pixel_color = ray_color(r, world);
-            pixels[channels * (j * image_width + i) + 0] = static_cast<unsigned char>(pixel_color.r);
-            pixels[channels * (j * image_width + i) + 1] = static_cast<unsigned char>(pixel_color.g);
-            pixels[channels * (j * image_width + i) + 2] = static_cast<unsigned char>(pixel_color.b);
-        }
-    }
+    std::unique_ptr<Renderer> renderer;
+    renderer = std::make_unique<MyRenderer>(samples_per_pixel);
+    renderer->render(camera, world, pixels.data());
 
     const char *filename = "output.png";
     int stride_in_bytes = image_width * channels;

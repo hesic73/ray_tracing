@@ -1,4 +1,6 @@
 image_width: 1920
 image_height: 1080
 
+samples_per_pixel: 50
+
 fov: 90

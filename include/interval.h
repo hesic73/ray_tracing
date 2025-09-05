@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "common.h"
 
 struct Interval
@@ -18,6 +20,11 @@ struct Interval
     bool surrounds(FloatType value) const
     {
         return value > min && value < max;
+    }
+
+    FloatType clamp(FloatType value) const
+    {
+        return std::clamp(value, min, max);
     }
 
     static Interval interval_zero_infinity()
