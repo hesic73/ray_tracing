@@ -21,7 +21,7 @@ FetchContent_MakeAvailable(spdlog)
 FetchContent_Declare(
   yaml-cpp
   GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
-  GIT_TAG 0.8.0
+  GIT_TAG master
 )
 FetchContent_MakeAvailable(yaml-cpp)
 

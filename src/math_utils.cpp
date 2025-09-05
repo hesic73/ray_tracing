@@ -1,13 +1,14 @@
 #include "math_utils.h"
 #include "transform.h"
 #include <cmath>
+#include <numbers>
 
 namespace MathUtils
 {
 
     double degrees_to_radians(double degrees)
     {
-        return degrees * M_PI / 180.0;
+        return degrees * std::numbers::pi / 180.0;
     }
 
     Vec3 rotate(const Quaternion &q, const Vec3 &v)

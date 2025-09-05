@@ -32,3 +32,7 @@ make
 - [spdlog](https://github.com/gabime/spdlog)
 - [stb](https://github.com/nothings/stb)
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
+
+## Reference
+
+- [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
