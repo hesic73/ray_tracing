@@ -7,6 +7,7 @@ struct Transform;
 
 namespace MathUtils
 {
+    double degrees_to_radians(double degrees);
 
     Vec3 rotate(const Quaternion &q, const Vec3 &v);
 

@@ -14,9 +14,9 @@ struct Camera
     const std::int32_t image_height;
     const double aspect_ratio;
 
+    const double focal_length;
     const double viewport_height;
     const double viewport_width;
-    const double focal_length;
 
     Transform pose;
 
@@ -30,14 +30,15 @@ struct Camera
     Camera(
         std::int32_t image_width,
         std::int32_t image_height,
+        double fov,
         double focal_length = 1.0,
         const Transform &pose = Transform::identity())
         : image_width(image_width),
           image_height(image_height),
           aspect_ratio(double(image_width) / image_height),
-          viewport_height(2.0),
-          viewport_width(aspect_ratio * viewport_height),
           focal_length(focal_length),
+          viewport_height(2.0 * std::tan(MathUtils::degrees_to_radians(fov) / 2.0) * focal_length),
+          viewport_width(aspect_ratio * viewport_height),
           pose(pose)
     {
     }

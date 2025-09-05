@@ -28,6 +28,11 @@ struct Vec3
         return std::sqrt(x * x + y * y + z * z);
     }
 
+    double squared_norm() const
+    {
+        return x * x + y * y + z * z;
+    }
+
     Vec3 &operator+=(const Vec3 &v)
     {
         x += v.x;
@@ -91,4 +96,3 @@ Vec3 operator*(const Vec3 &v, double t);
 Vec3 operator/(const Vec3 &v, double t);
 
 using Point3 = Vec3; // 3D point
-using Color3 = Vec3; // RGB color

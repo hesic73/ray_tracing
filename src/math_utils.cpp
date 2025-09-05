@@ -4,6 +4,12 @@
 
 namespace MathUtils
 {
+
+    double degrees_to_radians(double degrees)
+    {
+        return degrees * M_PI / 180.0;
+    }
+
     Vec3 rotate(const Quaternion &q, const Vec3 &v)
     {
         Vec3 u(q.x, q.y, q.z);
