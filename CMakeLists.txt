@@ -17,9 +17,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(spdlog)
 
-add_executable(ray_tracing main.cpp)
+file(GLOB SRC_FILES "src/*.cpp")
+add_executable(ray_tracing main.cpp ${SRC_FILES})
 
-target_include_directories(ray_tracing PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb)
+target_include_directories(ray_tracing PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/stb
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
 target_compile_definitions(ray_tracing PRIVATE STB_IMAGE_IMPLEMENTATION STB_IMAGE_WRITE_IMPLEMENTATION)
 
