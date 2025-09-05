@@ -18,7 +18,7 @@
 Color ray_color(const Ray &r, const Hittable &world)
 {
     HitRecord hit_record = HitRecord::default_record();
-    if (world.hit(r, zero_f, infinity_f, hit_record))
+    if (world.hit(r, Interval::interval_zero_infinity(), hit_record))
     {
         Vec3 N = hit_record.normal;
         return Color::from_float(static_cast<FloatType>(0.5) * (N.x + static_cast<FloatType>(1.0)),

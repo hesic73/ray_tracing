@@ -15,15 +15,15 @@ struct HittableList : public Hittable
 
     void add(const std::shared_ptr<Hittable> &object) { objects.push_back(object); }
 
-    bool hit(const Ray &r, FloatType t_min, FloatType t_max, HitRecord &hit_record) const override
+    bool hit(const Ray &r, Interval t_range, HitRecord &hit_record) const override
     {
         auto temp_record = HitRecord::default_record();
         bool hit_anything = false;
-        FloatType closest_so_far = t_max;
+        FloatType closest_so_far = t_range.max;
 
         for (const auto &object : objects)
         {
-            if (object->hit(r, t_min, closest_so_far, temp_record))
+            if (object->hit(r, Interval(t_range.min, closest_so_far), temp_record))
             {
                 hit_anything = true;
                 closest_so_far = temp_record.t;

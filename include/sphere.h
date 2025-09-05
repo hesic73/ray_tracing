@@ -13,7 +13,7 @@ struct Sphere : public Hittable
 
     Sphere(const Point3 &center, FloatType radius) : center(center), radius(std::fmax(radius, FloatType(0))) {}
 
-    bool hit(const Ray &r, FloatType t_min, FloatType t_max, HitRecord &hit_record) const override
+    bool hit(const Ray &r, Interval t_range, HitRecord &hit_record) const override
     {
         Vec3 oc = r.origin - center;
         FloatType a = r.direction.squared_norm();
@@ -29,10 +29,10 @@ struct Sphere : public Hittable
 
         // Find the nearest root that lies in the acceptable range.
         FloatType root = (-half_b - sqrt_d) / a;
-        if (root < t_min || root > t_max)
+        if (!t_range.surrounds(root))
         {
             root = (-half_b + sqrt_d) / a;
-            if (root < t_min || root > t_max)
+            if (!t_range.surrounds(root))
             {
                 return false;
             }
