@@ -12,6 +12,8 @@ struct Vec3
     Vec3(const Vec3 &v) = default;
     Vec3 &operator=(const Vec3 &v) = default;
 
+    static Vec3 zero() { return Vec3(0, 0, 0); }
+
     double operator[](int i) const
     {
         return (&x)[i];
@@ -62,6 +64,23 @@ struct Vec3
     {
         return "(" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")";
     }
+
+    static Vec3 normalize(const Vec3 &v)
+    {
+        return v / v.norm();
+    }
+
+    static double dot(const Vec3 &u, const Vec3 &v)
+    {
+        return u.x * v.x + u.y * v.y + u.z * v.z;
+    }
+
+    static Vec3 cross(const Vec3 &u, const Vec3 &v)
+    {
+        return Vec3(u.y * v.z - u.z * v.y,
+                    u.z * v.x - u.x * v.z,
+                    u.x * v.y - u.y * v.x);
+    }
 };
 
 Vec3 operator+(const Vec3 &u, const Vec3 &v);
@@ -70,7 +89,5 @@ Vec3 operator*(double t, const Vec3 &v);
 Vec3 operator*(const Vec3 &v, double t);
 Vec3 operator/(const Vec3 &v, double t);
 
-double dot(const Vec3 &u, const Vec3 &v);
-Vec3 cross(const Vec3 &u, const Vec3 &v);
-
-Vec3 normalize(const Vec3 &v);
+using Point3 = Vec3; // 3D point
+using Color3 = Vec3; // RGB color
