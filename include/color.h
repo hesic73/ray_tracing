@@ -4,7 +4,7 @@
 #include <algorithm>
 
 #include "vec3.h"
-#include "float_type.h"
+#include "common.h"
 
 struct Color
 {

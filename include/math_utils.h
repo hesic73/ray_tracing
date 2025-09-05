@@ -2,7 +2,7 @@
 
 #include "vec3.h"
 #include "quaternion.h"
-#include "float_type.h"
+#include "common.h"
 
 struct Transform;
 

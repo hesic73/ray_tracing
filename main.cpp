@@ -9,33 +9,21 @@
 #include "ray.h"
 #include "color.h"
 #include "camera.h"
-#include "float_type.h"
+#include "common.h"
 
-FloatType hit_sphere(const Point3 &center, FloatType radius, const Ray &r)
+#include "hittable.h"
+#include "hittable_list.h"
+#include "sphere.h"
+
+Color ray_color(const Ray &r, const Hittable &world)
 {
-    Vec3 oc = center - r.origin;
-    FloatType a = r.direction.squared_norm();
-    FloatType h = Vec3::dot(r.direction, oc);
-    FloatType c = oc.squared_norm() - radius * radius;
-    FloatType discriminant = h * h - a * c;
-
-    if (discriminant < 0)
+    HitRecord hit_record = HitRecord::default_record();
+    if (world.hit(r, zero_f, infinity_f, hit_record))
     {
-        return static_cast<FloatType>(-1.0);
-    }
-    else
-    {
-        return (h - std::sqrt(discriminant)) / a;
-    }
-}
-
-Color ray_color(const Ray &r)
-{
-    auto t = hit_sphere(Point3(0, 0, -1), static_cast<FloatType>(0.5), r);
-    if (t > 0.0)
-    {
-        Vec3 N = Vec3::normalize(r.at(t) - Vec3(0, 0, -1));
-        return Color::from_vec3(static_cast<FloatType>(0.5) * Vec3(N.x + 1, N.y + 1, N.z + 1));
+        Vec3 N = hit_record.normal;
+        return Color::from_float(static_cast<FloatType>(0.5) * (N.x + static_cast<FloatType>(1.0)),
+                                 static_cast<FloatType>(0.5) * (N.y + static_cast<FloatType>(1.0)),
+                                 static_cast<FloatType>(0.5) * (N.z + static_cast<FloatType>(1.0)));
     }
 
     Vec3 unit_direction = Vec3::normalize(r.direction);
@@ -81,7 +69,11 @@ int main(int argc, char **argv)
     spdlog::info("Image dimensions: {}x{}", image_width, image_height);
     spdlog::info("Field of view: {}", fov);
 
-    const int channels = 3;
+    constexpr int channels = 3;
+
+    HittableList world;
+    world.add(std::make_shared<Sphere>(Point3(0, 0, -1), 0.5));
+    world.add(std::make_shared<Sphere>(Point3(0, -100.5, -1), 100));
 
     Camera camera(image_width, image_height, fov);
     camera.set_position(Vec3(0, 0, 0));
@@ -96,7 +88,7 @@ int main(int argc, char **argv)
             FloatType u = static_cast<FloatType>(i + 0.5) / image_width;
             FloatType v = static_cast<FloatType>(1.0) - static_cast<FloatType>(j + 0.5) / image_height; // flip v for image coordinates
             Ray r = camera.get_ray(u, v);
-            Color pixel_color = ray_color(r);
+            Color pixel_color = ray_color(r, world);
             pixels[channels * (j * image_width + i) + 0] = static_cast<unsigned char>(pixel_color.r);
             pixels[channels * (j * image_width + i) + 1] = static_cast<unsigned char>(pixel_color.g);
             pixels[channels * (j * image_width + i) + 2] = static_cast<unsigned char>(pixel_color.b);

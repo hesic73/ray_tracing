@@ -2,7 +2,7 @@
 
 #include <cmath>
 #include <string>
-#include "float_type.h"
+#include "common.h"
 
 struct Vec3
 {
@@ -64,6 +64,11 @@ struct Vec3
         y /= t;
         z /= t;
         return *this;
+    }
+
+    Vec3 operator-() const
+    {
+        return Vec3(-x, -y, -z);
     }
 
     std::string to_string() const
