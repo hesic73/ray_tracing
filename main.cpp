@@ -9,18 +9,19 @@
 #include "ray.h"
 #include "color.h"
 #include "camera.h"
+#include "float_type.h"
 
-double hit_sphere(const Point3 &center, double radius, const Ray &r)
+FloatType hit_sphere(const Point3 &center, FloatType radius, const Ray &r)
 {
     Vec3 oc = center - r.origin;
-    double a = r.direction.squared_norm();
-    double h = Vec3::dot(r.direction, oc);
-    double c = oc.squared_norm() - radius * radius;
-    double discriminant = h * h - a * c;
+    FloatType a = r.direction.squared_norm();
+    FloatType h = Vec3::dot(r.direction, oc);
+    FloatType c = oc.squared_norm() - radius * radius;
+    FloatType discriminant = h * h - a * c;
 
     if (discriminant < 0)
     {
-        return -1.0;
+        return static_cast<FloatType>(-1.0);
     }
     else
     {
@@ -30,16 +31,16 @@ double hit_sphere(const Point3 &center, double radius, const Ray &r)
 
 Color ray_color(const Ray &r)
 {
-    auto t = hit_sphere(Point3(0, 0, -1), 0.5, r);
+    auto t = hit_sphere(Point3(0, 0, -1), static_cast<FloatType>(0.5), r);
     if (t > 0.0)
     {
         Vec3 N = Vec3::normalize(r.at(t) - Vec3(0, 0, -1));
-        return Color::from_vec3(0.5 * Vec3(N.x + 1, N.y + 1, N.z + 1));
+        return Color::from_vec3(static_cast<FloatType>(0.5) * Vec3(N.x + 1, N.y + 1, N.z + 1));
     }
 
     Vec3 unit_direction = Vec3::normalize(r.direction);
-    auto a = 0.5 * (unit_direction.y + 1.0);
-    return Color::from_vec3((1.0 - a) * Vec3(1.0, 1.0, 1.0) + a * Vec3(0.5, 0.7, 1.0));
+    auto a = static_cast<FloatType>(0.5) * (unit_direction.y + static_cast<FloatType>(1.0));
+    return Color::from_vec3((static_cast<FloatType>(1.0) - a) * Vec3(static_cast<FloatType>(1.0), static_cast<FloatType>(1.0), static_cast<FloatType>(1.0)) + a * Vec3(static_cast<FloatType>(0.5), static_cast<FloatType>(0.7), static_cast<FloatType>(1.0)));
 }
 
 int main(int argc, char **argv)
@@ -64,12 +65,12 @@ int main(int argc, char **argv)
 
     int image_width;
     int image_height;
-    double fov;
+    FloatType fov;
     try
     {
         image_width = config["image_width"].as<int>();
         image_height = config["image_height"].as<int>();
-        fov = config["fov"].as<double>();
+        fov = config["fov"].as<FloatType>();
     }
     catch (const YAML::RepresentationException &e)
     {
@@ -92,8 +93,8 @@ int main(int argc, char **argv)
     {
         for (int i = 0; i < image_width; ++i)
         {
-            double u = double(i + 0.5) / image_width;
-            double v = 1.0 - double(j + 0.5) / image_height; // flip v for image coordinates
+            FloatType u = static_cast<FloatType>(i + 0.5) / image_width;
+            FloatType v = static_cast<FloatType>(1.0) - static_cast<FloatType>(j + 0.5) / image_height; // flip v for image coordinates
             Ray r = camera.get_ray(u, v);
             Color pixel_color = ray_color(r);
             pixels[channels * (j * image_width + i) + 0] = static_cast<unsigned char>(pixel_color.r);

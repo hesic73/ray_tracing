@@ -2,33 +2,34 @@
 
 #include <cmath>
 #include <string>
+#include "float_type.h"
 
 struct Vec3
 {
-    double x;
-    double y;
-    double z;
-    Vec3(double x, double y, double z) : x(x), y(y), z(z) {}
+    FloatType x;
+    FloatType y;
+    FloatType z;
+    Vec3(FloatType x, FloatType y, FloatType z) : x(x), y(y), z(z) {}
     Vec3(const Vec3 &v) = default;
     Vec3 &operator=(const Vec3 &v) = default;
 
     static Vec3 zero() { return Vec3(0, 0, 0); }
 
-    double operator[](int i) const
+    FloatType operator[](int i) const
     {
         return (&x)[i];
     }
-    double &operator[](int i)
+    FloatType &operator[](int i)
     {
         return (&x)[i];
     }
 
-    double norm() const
+    FloatType norm() const
     {
         return std::sqrt(x * x + y * y + z * z);
     }
 
-    double squared_norm() const
+    FloatType squared_norm() const
     {
         return x * x + y * y + z * z;
     }
@@ -49,7 +50,7 @@ struct Vec3
         return *this;
     }
 
-    Vec3 &operator*=(const double t)
+    Vec3 &operator*=(const FloatType t)
     {
         x *= t;
         y *= t;
@@ -57,7 +58,7 @@ struct Vec3
         return *this;
     }
 
-    Vec3 &operator/=(const double t)
+    Vec3 &operator/=(const FloatType t)
     {
         x /= t;
         y /= t;
@@ -72,11 +73,11 @@ struct Vec3
 
     static Vec3 normalize(const Vec3 &v)
     {
-        double n = v.norm();
+        FloatType n = v.norm();
         return Vec3(v.x / n, v.y / n, v.z / n);
     }
 
-    static double dot(const Vec3 &u, const Vec3 &v)
+    static FloatType dot(const Vec3 &u, const Vec3 &v)
     {
         return u.x * v.x + u.y * v.y + u.z * v.z;
     }
@@ -91,8 +92,8 @@ struct Vec3
 
 Vec3 operator+(const Vec3 &u, const Vec3 &v);
 Vec3 operator-(const Vec3 &u, const Vec3 &v);
-Vec3 operator*(double t, const Vec3 &v);
-Vec3 operator*(const Vec3 &v, double t);
-Vec3 operator/(const Vec3 &v, double t);
+Vec3 operator*(FloatType t, const Vec3 &v);
+Vec3 operator*(const Vec3 &v, FloatType t);
+Vec3 operator/(const Vec3 &v, FloatType t);
 
 using Point3 = Vec3; // 3D point

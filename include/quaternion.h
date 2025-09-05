@@ -5,9 +5,9 @@
 
 struct Quaternion
 {
-    double w, x, y, z;
+    FloatType w, x, y, z;
 
-    Quaternion(double w, double x, double y, double z) : w(w), x(x), y(y), z(z) {}
+    Quaternion(FloatType w, FloatType x, FloatType y, FloatType z) : w(w), x(x), y(y), z(z) {}
     Quaternion(const Quaternion &q) = default;
     Quaternion &operator=(const Quaternion &q) = default;
 
@@ -20,14 +20,14 @@ struct Quaternion
      * @param pitch Rotation around Y-axis (in radians)
      * @param yaw   Rotation around Z-axis (in radians)
      */
-    static Quaternion from_euler(double roll, double pitch, double yaw)
+    static Quaternion from_euler(FloatType roll, FloatType pitch, FloatType yaw)
     {
-        double cy = std::cos(yaw * 0.5);
-        double sy = std::sin(yaw * 0.5);
-        double cp = std::cos(pitch * 0.5);
-        double sp = std::sin(pitch * 0.5);
-        double cr = std::cos(roll * 0.5);
-        double sr = std::sin(roll * 0.5);
+        FloatType cy = std::cos(yaw * static_cast<FloatType>(0.5));
+        FloatType sy = std::sin(yaw * static_cast<FloatType>(0.5));
+        FloatType cp = std::cos(pitch * static_cast<FloatType>(0.5));
+        FloatType sp = std::sin(pitch * static_cast<FloatType>(0.5));
+        FloatType cr = std::cos(roll * static_cast<FloatType>(0.5));
+        FloatType sr = std::sin(roll * static_cast<FloatType>(0.5));
 
         return Quaternion(
             cr * cp * cy + sr * sp * sy,
@@ -38,7 +38,7 @@ struct Quaternion
 
     static Quaternion normalize(const Quaternion &q)
     {
-        double n = q.norm();
+        FloatType n = q.norm();
         return Quaternion(q.w / n, q.x / n, q.y / n, q.z / n);
     }
 
@@ -56,14 +56,14 @@ struct Quaternion
         return Quaternion(w, -x, -y, -z);
     }
 
-    double norm() const
+    FloatType norm() const
     {
         return std::sqrt(w * w + x * x + y * y + z * z);
     }
 
     static Quaternion inverse(const Quaternion &q)
     {
-        double n = q.norm();
+        FloatType n = q.norm();
         Quaternion conj = q.conjugate();
         return Quaternion(conj.w / (n * n), conj.x / (n * n), conj.y / (n * n), conj.z / (n * n));
     }

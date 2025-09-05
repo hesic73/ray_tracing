@@ -9,14 +9,13 @@
 
 struct Camera
 {
-    // Image dimensions
     const std::int32_t image_width;
     const std::int32_t image_height;
-    const double aspect_ratio;
+    const FloatType aspect_ratio;
 
-    const double focal_length;
-    const double viewport_height;
-    const double viewport_width;
+    const FloatType focal_length;
+    const FloatType viewport_height;
+    const FloatType viewport_width;
 
     Transform pose;
 
@@ -30,14 +29,14 @@ struct Camera
     Camera(
         std::int32_t image_width,
         std::int32_t image_height,
-        double fov,
-        double focal_length = 1.0,
+        FloatType fov,
+        FloatType focal_length = static_cast<FloatType>(1.0),
         const Transform &pose = Transform::identity())
         : image_width(image_width),
           image_height(image_height),
-          aspect_ratio(double(image_width) / image_height),
+          aspect_ratio(static_cast<FloatType>(image_width) / image_height),
           focal_length(focal_length),
-          viewport_height(2.0 * std::tan(MathUtils::degrees_to_radians(fov) / 2.0) * focal_length),
+          viewport_height(static_cast<FloatType>(2.0) * std::tan(MathUtils::degrees_to_radians(fov) / static_cast<FloatType>(2.0)) * focal_length),
           viewport_width(aspect_ratio * viewport_height),
           pose(pose)
     {
@@ -58,11 +57,11 @@ struct Camera
         pose.rotation = rotation;
     }
 
-    Ray get_ray(double u, double v) const
+    Ray get_ray(FloatType u, FloatType v) const
     {
         Vec3 local_point = Vec3(
-            (u - 0.5) * viewport_width,
-            (v - 0.5) * viewport_height,
+            (u - static_cast<FloatType>(0.5)) * viewport_width,
+            (v - static_cast<FloatType>(0.5)) * viewport_height,
             -focal_length);
 
         Vec3 world_point = MathUtils::transform_point(pose, local_point);
