@@ -4,6 +4,7 @@
 #include <chrono>
 #include <string>
 #include <sstream>
+#include <vector>
 
 #include "spdlog/spdlog.h"
 #include "stb_image_write.h"
@@ -88,15 +89,34 @@ int main(int argc, char **argv)
 
     int image_width;
     int image_height;
+
     FloatType fov;
+    std::vector<FloatType> camera_position;
+    std::vector<FloatType> camera_look_at;
+
     int samples_per_pixel;
     int max_depth;
+
     FloatType gamma;
     try
     {
         image_width = config["image_width"].as<int>();
         image_height = config["image_height"].as<int>();
+
         fov = config["fov"].as<FloatType>();
+
+        auto camera_position_node = config["camera_position"];
+        for (int i = 0; i < 3; ++i)
+        {
+            camera_position.push_back(camera_position_node[i].as<FloatType>());
+        }
+
+        auto camera_look_at_node = config["camera_look_at"];
+        for (int i = 0; i < 3; ++i)
+        {
+            camera_look_at.push_back(camera_look_at_node[i].as<FloatType>());
+        }
+
         samples_per_pixel = config["samples_per_pixel"].as<int>();
         max_depth = config["max_depth"].as<int>();
         gamma = config["gamma"].as<FloatType>();
@@ -108,9 +128,14 @@ int main(int argc, char **argv)
     }
 
     spdlog::info("Image dimensions: {}x{}", image_width, image_height);
+
     spdlog::info("Field of view: {}", fov);
+    spdlog::info("Camera position: [{}, {}, {}]", camera_position[0], camera_position[1], camera_position[2]);
+    spdlog::info("Camera look at: [{}, {}, {}]", camera_look_at[0], camera_look_at[1], camera_look_at[2]);
+
     spdlog::info("Samples per pixel: {}", samples_per_pixel);
     spdlog::info("Max depth: {}", max_depth);
+
     spdlog::info("Gamma: {}", gamma);
 
     constexpr int channels = 3;
@@ -119,17 +144,19 @@ int main(int argc, char **argv)
 
     auto material_ground = Lambertian(ColorFloat(0.8, 0.8, 0.0));
     auto material_center = Lambertian(ColorFloat(0.1, 0.2, 0.5));
-    auto material_left = Metal(ColorFloat(0.8, 0.8, 0.8), 0.3);
+    auto material_left = Dielectric(1.50);
+    auto material_bubble = Dielectric(1.00 / 1.50);
     auto material_right = Metal(ColorFloat(0.8, 0.6, 0.2), 1.0);
 
     world.add(std::make_shared<Sphere>(Point3(0.0, -100.5, -1.0), 100.0, &material_ground));
     world.add(std::make_shared<Sphere>(Point3(0.0, 0.0, -1.2), 0.5, &material_center));
     world.add(std::make_shared<Sphere>(Point3(-1.0, 0.0, -1.0), 0.5, &material_left));
+    world.add(std::make_shared<Sphere>(Point3(-1.0, 0.0, -1.0), -0.4, &material_bubble));
     world.add(std::make_shared<Sphere>(Point3(1.0, 0.0, -1.0), 0.5, &material_right));
 
     Camera camera(image_width, image_height, fov);
-    camera.set_position(Vec3(0, 0, 0));
-    camera.look_at(Vec3(0, 0, -1));
+    camera.set_position(Vec3(camera_position[0], camera_position[1], camera_position[2]));
+    camera.look_at(Vec3(camera_look_at[0], camera_look_at[1], camera_look_at[2]));
 
     std::vector<unsigned char> pixels(image_width * image_height * channels);
 

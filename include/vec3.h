@@ -117,6 +117,14 @@ struct Vec3
         return v - 2 * Vec3::dot(v, n) * n;
     }
 
+    static Vec3 refract(const Vec3 &uv, const Vec3 &n, FloatType etai_over_etat)
+    {
+        FloatType cos_theta = std::fmin(Vec3::dot(-uv, n), one_f);
+        Vec3 r_out_perp = etai_over_etat * (uv + cos_theta * n);
+        Vec3 r_out_parallel = -std::sqrt(std::fabs(1.0 - r_out_perp.squared_norm())) * n;
+        return r_out_perp + r_out_parallel;
+    }
+
     static Vec3 uninitialized()
     {
         return Vec3();

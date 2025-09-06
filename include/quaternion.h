@@ -13,29 +13,6 @@ struct Quaternion
 
     static Quaternion identity() { return Quaternion(1, 0, 0, 0); }
 
-    /**
-     * Create quaternion from Euler angles in ZYX convention.
-     *
-     * @param roll  Rotation around X-axis (in radians)
-     * @param pitch Rotation around Y-axis (in radians)
-     * @param yaw   Rotation around Z-axis (in radians)
-     */
-    static Quaternion from_euler(FloatType roll, FloatType pitch, FloatType yaw)
-    {
-        FloatType cy = std::cos(yaw * static_cast<FloatType>(0.5));
-        FloatType sy = std::sin(yaw * static_cast<FloatType>(0.5));
-        FloatType cp = std::cos(pitch * static_cast<FloatType>(0.5));
-        FloatType sp = std::sin(pitch * static_cast<FloatType>(0.5));
-        FloatType cr = std::cos(roll * static_cast<FloatType>(0.5));
-        FloatType sr = std::sin(roll * static_cast<FloatType>(0.5));
-
-        return Quaternion(
-            cr * cp * cy + sr * sp * sy,
-            sr * cp * cy - cr * sp * sy,
-            cr * sp * cy + sr * cp * sy,
-            cr * cp * sy - sr * sp * cy);
-    }
-
     static Quaternion normalize(const Quaternion &q)
     {
         FloatType n = q.norm();
@@ -67,4 +44,12 @@ struct Quaternion
         Quaternion conj = q.conjugate();
         return Quaternion(conj.w / (n * n), conj.x / (n * n), conj.y / (n * n), conj.z / (n * n));
     }
+
+    static Quaternion uninitialized()
+    {
+        return Quaternion();
+    }
+
+private:
+    Quaternion() {}
 };
