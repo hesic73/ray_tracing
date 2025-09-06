@@ -10,3 +10,5 @@ FloatType random_float(FloatType min, FloatType max); // in [min,max)
 Vec3 random_unit_sphere();
 
 Vec3 random_on_hemisphere(const Vec3 &normal);
+
+Vec3 random_in_unit_disk();

@@ -93,6 +93,8 @@ int main(int argc, char **argv)
     FloatType fov;
     std::vector<FloatType> camera_position;
     std::vector<FloatType> camera_look_at;
+    FloatType focus_dist;
+    FloatType defocus_angle;
 
     int samples_per_pixel;
     int max_depth;
@@ -100,10 +102,11 @@ int main(int argc, char **argv)
     FloatType gamma;
     try
     {
+        fov = config["fov"].as<FloatType>();
         image_width = config["image_width"].as<int>();
         image_height = config["image_height"].as<int>();
-
-        fov = config["fov"].as<FloatType>();
+        focus_dist = config["focus_dist"].as<FloatType>();
+        defocus_angle = config["defocus_angle"].as<FloatType>();
 
         auto camera_position_node = config["camera_position"];
         for (int i = 0; i < 3; ++i)
@@ -131,6 +134,8 @@ int main(int argc, char **argv)
 
     spdlog::info("Field of view: {}", fov);
     spdlog::info("Camera position: [{}, {}, {}]", camera_position[0], camera_position[1], camera_position[2]);
+    spdlog::info("Focus distance: {}", focus_dist);
+    spdlog::info("Defocus angle: {}", defocus_angle);
     spdlog::info("Camera look at: [{}, {}, {}]", camera_look_at[0], camera_look_at[1], camera_look_at[2]);
 
     spdlog::info("Samples per pixel: {}", samples_per_pixel);
@@ -151,10 +156,10 @@ int main(int argc, char **argv)
     world.add(std::make_shared<Sphere>(Point3(0.0, -100.5, -1.0), 100.0, &material_ground));
     world.add(std::make_shared<Sphere>(Point3(0.0, 0.0, -1.2), 0.5, &material_center));
     world.add(std::make_shared<Sphere>(Point3(-1.0, 0.0, -1.0), 0.5, &material_left));
-    world.add(std::make_shared<Sphere>(Point3(-1.0, 0.0, -1.0), -0.4, &material_bubble));
+    world.add(std::make_shared<Sphere>(Point3(-1.0, 0.0, -1.0), 0.4, &material_bubble));
     world.add(std::make_shared<Sphere>(Point3(1.0, 0.0, -1.0), 0.5, &material_right));
 
-    Camera camera(image_width, image_height, fov);
+    Camera camera(image_width, image_height, fov, focus_dist, defocus_angle);
     camera.set_position(Vec3(camera_position[0], camera_position[1], camera_position[2]));
     camera.look_at(Vec3(camera_look_at[0], camera_look_at[1], camera_look_at[2]));
 
