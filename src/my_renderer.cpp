@@ -11,15 +11,15 @@
 #include "hittable_list.h"
 #include "sphere.h"
 
-Vec3 ray_color(const Ray &r, const Hittable &world)
+Vec3 ray_color(const Ray &r, int depth, const Hittable &world)
 {
+    if (depth <= 0)
+        return Vec3::zero();
     HitRecord hit_record = HitRecord::default_record();
     if (world.hit(r, Interval::interval_zero_infinity(), hit_record))
     {
-        Vec3 N = hit_record.normal;
-        return 0.5 * Vec3(N.x + one_f,
-                          N.y + one_f,
-                          N.z + one_f);
+        auto direction = random_on_hemisphere(hit_record.normal);
+        return 0.5 * ray_color(Ray(hit_record.point, direction), depth - 1, world);
     }
 
     Vec3 unit_direction = Vec3::normalize(r.direction);
@@ -27,8 +27,8 @@ Vec3 ray_color(const Ray &r, const Hittable &world)
     return (one_f - a) * Vec3(one_f, one_f, one_f) + a * Vec3(static_cast<FloatType>(0.5), static_cast<FloatType>(0.7), static_cast<FloatType>(1.0));
 }
 
-MyRenderer::MyRenderer(int samples_per_pixel)
-    : samples_per_pixel(samples_per_pixel)
+MyRenderer::MyRenderer(int samples_per_pixel, int max_depth)
+    : samples_per_pixel(samples_per_pixel), max_depth(max_depth)
 {
 }
 
@@ -41,12 +41,10 @@ void MyRenderer::render(
     {
         for (int i = 0; i < camera.image_width; ++i)
         {
-            Vec3 pixel_color_sum = Vec3::zero(); // Accumulate color as Vec3 (floating point)
+            Vec3 pixel_color_sum = Vec3::zero();
 
-            // Sample multiple rays per pixel for antialiasing
             for (int sample = 0; sample < samples_per_pixel; ++sample)
             {
-                // Add random offset for antialiasing
                 FloatType random_u = random_float() - static_cast<FloatType>(0.5); // [-0.5, 0.5)
                 FloatType random_v = random_float() - static_cast<FloatType>(0.5); // [-0.5, 0.5)
 
@@ -54,7 +52,7 @@ void MyRenderer::render(
                 FloatType v = static_cast<FloatType>(1.0) - (static_cast<FloatType>(j) + static_cast<FloatType>(0.5) + random_v) / camera.image_height; // flip v for image coordinates
 
                 Ray r = camera.get_ray(u, v);
-                pixel_color_sum += ray_color(r, world);
+                pixel_color_sum += ray_color(r, max_depth, world);
             }
 
             pixel_color_sum = pixel_color_sum / static_cast<FloatType>(samples_per_pixel);

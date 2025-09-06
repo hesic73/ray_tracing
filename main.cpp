@@ -79,14 +79,16 @@ int main(int argc, char **argv)
 
     int image_width;
     int image_height;
-    int samples_per_pixel;
     FloatType fov;
+    int samples_per_pixel;
+    int max_depth;
     try
     {
         image_width = config["image_width"].as<int>();
         image_height = config["image_height"].as<int>();
         fov = config["fov"].as<FloatType>();
         samples_per_pixel = config["samples_per_pixel"].as<int>();
+        max_depth = config["max_depth"].as<int>();
     }
     catch (const YAML::RepresentationException &e)
     {
@@ -97,6 +99,7 @@ int main(int argc, char **argv)
     spdlog::info("Image dimensions: {}x{}", image_width, image_height);
     spdlog::info("Field of view: {}", fov);
     spdlog::info("Samples per pixel: {}", samples_per_pixel);
+    spdlog::info("Max depth: {}", max_depth);
 
     constexpr int channels = 3;
 
@@ -111,7 +114,7 @@ int main(int argc, char **argv)
     std::vector<unsigned char> pixels(image_width * image_height * channels);
 
     std::unique_ptr<Renderer> renderer;
-    renderer = std::make_unique<MyRenderer>(samples_per_pixel);
+    renderer = std::make_unique<MyRenderer>(samples_per_pixel, max_depth);
     
     auto start_time = std::chrono::high_resolution_clock::now();
     renderer->render(camera, world, pixels.data());
