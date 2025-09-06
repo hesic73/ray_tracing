@@ -5,3 +5,5 @@ fov: 90
 
 samples_per_pixel: 100
 max_depth: 10
+
+gamma: 0.5

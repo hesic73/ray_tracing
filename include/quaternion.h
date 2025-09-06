@@ -7,7 +7,7 @@ struct Quaternion
 {
     FloatType w, x, y, z;
 
-    Quaternion(FloatType w, FloatType x, FloatType y, FloatType z) : w(w), x(x), y(y), z(z) {}
+    constexpr Quaternion(FloatType w, FloatType x, FloatType y, FloatType z) : w(w), x(x), y(y), z(z) {}
     Quaternion(const Quaternion &q) = default;
     Quaternion &operator=(const Quaternion &q) = default;
 

@@ -26,9 +26,4 @@ struct Interval
     {
         return std::clamp(value, min, max);
     }
-
-    static Interval interval_zero_infinity()
-    {
-        return Interval(static_cast<FloatType>(0), infinity_f);
-    }
 };

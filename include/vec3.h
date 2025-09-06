@@ -9,7 +9,7 @@ struct Vec3
     FloatType x;
     FloatType y;
     FloatType z;
-    Vec3(FloatType x, FloatType y, FloatType z) : x(x), y(y), z(z) {}
+    constexpr Vec3(FloatType x, FloatType y, FloatType z) : x(x), y(y), z(z) {}
     Vec3(const Vec3 &v) = default;
     Vec3 &operator=(const Vec3 &v) = default;
 
@@ -92,6 +92,11 @@ struct Vec3
         return Vec3(u.y * v.z - u.z * v.y,
                     u.z * v.x - u.x * v.z,
                     u.x * v.y - u.y * v.x);
+    }
+
+    static Vec3 pow(const Vec3 &v, FloatType exponent)
+    {
+        return Vec3(std::pow(v.x, exponent), std::pow(v.y, exponent), std::pow(v.z, exponent));
     }
 };
 

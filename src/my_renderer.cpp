@@ -11,25 +11,21 @@
 #include "hittable_list.h"
 #include "sphere.h"
 
-Vec3 ray_color(const Ray &r, int depth, const Hittable &world)
+ColorFloat ray_color(const Ray &r, int depth, const Hittable &world)
 {
     if (depth <= 0)
-        return Vec3::zero();
+        return ColorFloat::black();
     HitRecord hit_record = HitRecord::default_record();
-    if (world.hit(r, Interval::interval_zero_infinity(), hit_record))
+    if (world.hit(r, Interval(static_cast<FloatType>(0.001), infinity_f), hit_record))
     {
-        auto direction = random_on_hemisphere(hit_record.normal);
+        // auto direction = random_on_hemisphere(hit_record.normal);
+        auto direction = hit_record.normal + random_unit_sphere();
         return 0.5 * ray_color(Ray(hit_record.point, direction), depth - 1, world);
     }
 
     Vec3 unit_direction = Vec3::normalize(r.direction);
     auto a = static_cast<FloatType>(0.5) * (unit_direction.y + one_f);
-    return (one_f - a) * Vec3(one_f, one_f, one_f) + a * Vec3(static_cast<FloatType>(0.5), static_cast<FloatType>(0.7), static_cast<FloatType>(1.0));
-}
-
-MyRenderer::MyRenderer(int samples_per_pixel, int max_depth)
-    : samples_per_pixel(samples_per_pixel), max_depth(max_depth)
-{
+    return (one_f - a) * ColorFloat::white() + a * ColorFloat(static_cast<FloatType>(0.5), static_cast<FloatType>(0.7), static_cast<FloatType>(1.0));
 }
 
 void MyRenderer::render(
@@ -41,7 +37,7 @@ void MyRenderer::render(
     {
         for (int i = 0; i < camera.image_width; ++i)
         {
-            Vec3 pixel_color_sum = Vec3::zero();
+            ColorFloat pixel_color_sum = ColorFloat::black();
 
             for (int sample = 0; sample < samples_per_pixel; ++sample)
             {
@@ -57,7 +53,10 @@ void MyRenderer::render(
 
             pixel_color_sum = pixel_color_sum / static_cast<FloatType>(samples_per_pixel);
 
-            ColorUint8 pixel_color = ColorUint8::from_vec3(pixel_color_sum);
+            // Gamma correction
+            pixel_color_sum = ColorFloat::pow(pixel_color_sum, gamma);
+
+            ColorUint8 pixel_color = pixel_color_sum.to_uint8();
 
             buffer[3 * (j * camera.image_width + i) + 0] = pixel_color.r;
             buffer[3 * (j * camera.image_width + i) + 1] = pixel_color.g;
