@@ -1,6 +1,9 @@
 
 #include <vector>
 #include <memory>
+#include <chrono>
+#include <string>
+#include <sstream>
 
 #include "spdlog/spdlog.h"
 #include "stb_image_write.h"
@@ -16,6 +19,43 @@
 #include "sphere.h"
 
 #include "my_renderer.h"
+
+std::string format_duration(std::chrono::milliseconds duration) {
+    auto total_ms = duration.count();
+    
+    auto hours = total_ms / (1000 * 60 * 60);
+    total_ms %= (1000 * 60 * 60);
+    
+    auto minutes = total_ms / (1000 * 60);
+    total_ms %= (1000 * 60);
+    
+    auto seconds = total_ms / 1000;
+    auto milliseconds = total_ms % 1000;
+    
+    std::ostringstream oss;
+    bool has_prev = false;
+    
+    if (hours > 0) {
+        oss << hours << "h";
+        has_prev = true;
+    }
+    if (minutes > 0) {
+        if (has_prev) oss << " ";
+        oss << minutes << "m";
+        has_prev = true;
+    }
+    if (seconds > 0) {
+        if (has_prev) oss << " ";
+        oss << seconds << "s";
+        has_prev = true;
+    }
+    if (milliseconds > 0 || !has_prev) {
+        if (has_prev) oss << " ";
+        oss << milliseconds << "ms";
+    }
+    
+    return oss.str();
+}
 
 int main(int argc, char **argv)
 {
@@ -72,7 +112,13 @@ int main(int argc, char **argv)
 
     std::unique_ptr<Renderer> renderer;
     renderer = std::make_unique<MyRenderer>(samples_per_pixel);
+    
+    auto start_time = std::chrono::high_resolution_clock::now();
     renderer->render(camera, world, pixels.data());
+    auto end_time = std::chrono::high_resolution_clock::now();
+    
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    spdlog::info("Rendering completed in {}", format_duration(duration));
 
     const char *filename = "output.png";
     int stride_in_bytes = image_width * channels;
