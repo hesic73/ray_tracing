@@ -13,4 +13,12 @@ struct Ray
     {
         return origin + t * direction;
     }
+
+    static Ray uninitialized()
+    {
+        return Ray();
+    }
+
+private:
+    Ray() : origin(Point3::uninitialized()), direction(Vec3::uninitialized()) {}
 };

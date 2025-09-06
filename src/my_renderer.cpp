@@ -9,18 +9,26 @@
 
 #include "hittable.h"
 #include "hittable_list.h"
+#include "material.h"
+
 #include "sphere.h"
 
 ColorFloat ray_color(const Ray &r, int depth, const Hittable &world)
 {
     if (depth <= 0)
         return ColorFloat::black();
-    HitRecord hit_record = HitRecord::default_record();
+    HitRecord hit_record = HitRecord::uninitialized();
     if (world.hit(r, Interval(static_cast<FloatType>(0.001), infinity_f), hit_record))
     {
-        // auto direction = random_on_hemisphere(hit_record.normal);
-        auto direction = hit_record.normal + random_unit_sphere();
-        return 0.5 * ray_color(Ray(hit_record.point, direction), depth - 1, world);
+
+        Ray scattered = Ray::uninitialized();
+        ColorFloat attenuation = ColorFloat::uninitialized();
+        if (hit_record.material && hit_record.material->scatter(r, hit_record, attenuation, scattered))
+        {
+            return attenuation * ray_color(scattered, depth - 1, world);
+        }
+        // No scattering, return black
+        return ColorFloat::black();
     }
 
     Vec3 unit_direction = Vec3::normalize(r.direction);

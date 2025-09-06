@@ -4,6 +4,14 @@
 #include <string>
 #include "common.h"
 
+struct Vec3;
+
+Vec3 operator+(const Vec3 &u, const Vec3 &v);
+Vec3 operator-(const Vec3 &u, const Vec3 &v);
+Vec3 operator*(FloatType t, const Vec3 &v);
+Vec3 operator*(const Vec3 &v, FloatType t);
+Vec3 operator/(const Vec3 &v, FloatType t);
+
 struct Vec3
 {
     FloatType x;
@@ -76,6 +84,11 @@ struct Vec3
         return "(" + std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + ")";
     }
 
+    bool near_zero(FloatType epsilon = 1e-8) const
+    {
+        return (std::fabs(x) < epsilon) && (std::fabs(y) < epsilon) && (std::fabs(z) < epsilon);
+    }
+
     static Vec3 normalize(const Vec3 &v)
     {
         FloatType n = v.norm();
@@ -98,12 +111,19 @@ struct Vec3
     {
         return Vec3(std::pow(v.x, exponent), std::pow(v.y, exponent), std::pow(v.z, exponent));
     }
-};
 
-Vec3 operator+(const Vec3 &u, const Vec3 &v);
-Vec3 operator-(const Vec3 &u, const Vec3 &v);
-Vec3 operator*(FloatType t, const Vec3 &v);
-Vec3 operator*(const Vec3 &v, FloatType t);
-Vec3 operator/(const Vec3 &v, FloatType t);
+    static Vec3 reflect(const Vec3 &v, const Vec3 &n)
+    {
+        return v - 2 * Vec3::dot(v, n) * n;
+    }
+
+    static Vec3 uninitialized()
+    {
+        return Vec3();
+    }
+
+private:
+    Vec3() {}
+};
 
 using Point3 = Vec3; // 3D point

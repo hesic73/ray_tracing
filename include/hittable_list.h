@@ -17,7 +17,7 @@ struct HittableList : public Hittable
 
     bool hit(const Ray &r, Interval t_range, HitRecord &hit_record) const override
     {
-        auto temp_record = HitRecord::default_record();
+        auto temp_record = HitRecord::uninitialized();
         bool hit_anything = false;
         FloatType closest_so_far = t_range.max;
 

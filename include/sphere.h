@@ -10,8 +10,10 @@ struct Sphere : public Hittable
 {
     Point3 center;
     FloatType radius;
+    const Material *material;
 
-    Sphere(const Point3 &center, FloatType radius) : center(center), radius(std::fmax(radius, FloatType(0))) {}
+    Sphere(const Point3 &center, FloatType radius, const Material *material)
+        : center(center), radius(std::fmax(radius, FloatType(0))), material(material) {}
 
     bool hit(const Ray &r, Interval t_range, HitRecord &hit_record) const override
     {
@@ -42,6 +44,7 @@ struct Sphere : public Hittable
         hit_record.point = r.at(hit_record.t);
         Vec3 outward_normal = (hit_record.point - center) / radius;
         hit_record.set_face_normal(r, outward_normal);
+        hit_record.material = material;
 
         return true;
     }

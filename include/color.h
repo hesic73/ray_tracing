@@ -77,10 +77,18 @@ struct ColorFloat
         b += c.b;
         return *this;
     }
-};
 
+    static ColorFloat uninitialized()
+    {
+        return ColorFloat();
+    }
+
+private:
+    ColorFloat() {}
+};
 
 ColorFloat operator+(const ColorFloat &c1, const ColorFloat &c2);
 ColorFloat operator*(const ColorFloat &c, FloatType t);
 ColorFloat operator*(FloatType t, const ColorFloat &c);
+ColorFloat operator*(const ColorFloat &c1, const ColorFloat &c2);
 ColorFloat operator/(const ColorFloat &c, FloatType t);

@@ -17,43 +17,52 @@
 #include "hittable.h"
 #include "hittable_list.h"
 #include "sphere.h"
+#include "material.h"
 
 #include "my_renderer.h"
 
-std::string format_duration(std::chrono::milliseconds duration) {
+std::string format_duration(std::chrono::milliseconds duration)
+{
     auto total_ms = duration.count();
-    
+
     auto hours = total_ms / (1000 * 60 * 60);
     total_ms %= (1000 * 60 * 60);
-    
+
     auto minutes = total_ms / (1000 * 60);
     total_ms %= (1000 * 60);
-    
+
     auto seconds = total_ms / 1000;
     auto milliseconds = total_ms % 1000;
-    
+
     std::ostringstream oss;
     bool has_prev = false;
-    
-    if (hours > 0) {
+
+    if (hours > 0)
+    {
         oss << hours << "h";
         has_prev = true;
     }
-    if (minutes > 0) {
-        if (has_prev) oss << " ";
+    if (minutes > 0)
+    {
+        if (has_prev)
+            oss << " ";
         oss << minutes << "m";
         has_prev = true;
     }
-    if (seconds > 0) {
-        if (has_prev) oss << " ";
+    if (seconds > 0)
+    {
+        if (has_prev)
+            oss << " ";
         oss << seconds << "s";
         has_prev = true;
     }
-    if (milliseconds > 0 || !has_prev) {
-        if (has_prev) oss << " ";
+    if (milliseconds > 0 || !has_prev)
+    {
+        if (has_prev)
+            oss << " ";
         oss << milliseconds << "ms";
     }
-    
+
     return oss.str();
 }
 
@@ -107,8 +116,16 @@ int main(int argc, char **argv)
     constexpr int channels = 3;
 
     HittableList world;
-    world.add(std::make_shared<Sphere>(Point3(0, 0, -1), 0.5));
-    world.add(std::make_shared<Sphere>(Point3(0, -100.5, -1), 100));
+
+    auto material_ground = Lambertian(ColorFloat(0.8, 0.8, 0.0));
+    auto material_center = Lambertian(ColorFloat(0.1, 0.2, 0.5));
+    auto material_left = Metal(ColorFloat(0.8, 0.8, 0.8), 0.3);
+    auto material_right = Metal(ColorFloat(0.8, 0.6, 0.2), 1.0);
+
+    world.add(std::make_shared<Sphere>(Point3(0.0, -100.5, -1.0), 100.0, &material_ground));
+    world.add(std::make_shared<Sphere>(Point3(0.0, 0.0, -1.2), 0.5, &material_center));
+    world.add(std::make_shared<Sphere>(Point3(-1.0, 0.0, -1.0), 0.5, &material_left));
+    world.add(std::make_shared<Sphere>(Point3(1.0, 0.0, -1.0), 0.5, &material_right));
 
     Camera camera(image_width, image_height, fov);
     camera.set_position(Vec3(0, 0, 0));
@@ -118,11 +135,11 @@ int main(int argc, char **argv)
 
     std::unique_ptr<Renderer> renderer;
     renderer = std::make_unique<MyRenderer>(samples_per_pixel, max_depth, gamma);
-    
+
     auto start_time = std::chrono::high_resolution_clock::now();
     renderer->render(camera, world, pixels.data());
     auto end_time = std::chrono::high_resolution_clock::now();
-    
+
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
     spdlog::info("Rendering completed in {}", format_duration(duration));
 
