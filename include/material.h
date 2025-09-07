@@ -10,10 +10,7 @@ struct Material
     virtual ~Material() = default;
 
     virtual bool scatter(
-        const Ray &r_in, const HitRecord &rec, ColorFloat &attenuation, Ray &scattered) const
-    {
-        return false;
-    }
+        const Ray &r_in, const HitRecord &rec, ColorFloat &attenuation, Ray &scattered) const = 0;
 };
 
 struct Lambertian : public Material
@@ -34,7 +31,8 @@ struct Lambertian : public Material
 
 struct Metal : public Material
 {
-    Metal(const ColorFloat &albedo, FloatType fuzz) : albedo(albedo), fuzz(fuzz < 1 ? fuzz : 1) {}
+    Metal(const ColorFloat &albedo, FloatType fuzz)
+        : albedo(albedo), fuzz(fuzz < 0 ? 0 : (fuzz < 1 ? fuzz : 1)) {}
 
     bool scatter(const Ray &r_in, const HitRecord &rec, ColorFloat &attenuation, Ray &scattered) const override
     {

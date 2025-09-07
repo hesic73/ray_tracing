@@ -11,9 +11,7 @@ FloatType random_float()
 
 FloatType random_float(FloatType min, FloatType max)
 {
-    static std::uniform_real_distribution<FloatType> distribution(min, max);
-    static std::mt19937 generator(std::random_device{}());
-    return distribution(generator);
+    return min + (max - min) * random_float();
 }
 
 Vec3 random_unit_sphere()
