@@ -6,6 +6,9 @@
 #include "vec3.h"
 #include "common.h"
 
+FloatType random_float();
+FloatType random_float(FloatType min, FloatType max);
+
 struct ColorUint8
 {
     std::uint8_t r;
@@ -76,6 +79,16 @@ struct ColorFloat
         g += c.g;
         b += c.b;
         return *this;
+    }
+
+    static ColorFloat random()
+    {
+        return ColorFloat(random_float(), random_float(), random_float());
+    }
+
+    static ColorFloat random(FloatType min, FloatType max)
+    {
+        return ColorFloat(random_float(min, max), random_float(min, max), random_float(min, max));
     }
 
     static ColorFloat uninitialized()
