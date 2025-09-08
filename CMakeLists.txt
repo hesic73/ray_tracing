@@ -28,7 +28,7 @@ FetchContent_MakeAvailable(yaml-cpp)
 # oneTBB
 add_subdirectory(third_party/oneTBB)
 
-file(GLOB SRC_FILES "src/*.cpp")
+file(GLOB_RECURSE SRC_FILES "src/*.cpp")
 add_executable(ray_tracing main.cpp ${SRC_FILES})
 
 target_include_directories(ray_tracing PRIVATE 

@@ -52,6 +52,7 @@ struct Sphere : public Hittable
         hit_record.point = r.at(hit_record.t);
         Vec3 outward_normal = (hit_record.point - center_now) / radius;
         hit_record.set_face_normal(r, outward_normal);
+        get_sphere_uv(outward_normal, hit_record.u, hit_record.v);
         hit_record.material = material;
 
         return true;
@@ -72,5 +73,13 @@ struct Sphere : public Hittable
         AABB box0(center0 - r_vec, center0 + r_vec);
         AABB box1(center1 - r_vec, center1 + r_vec);
         return AABB::surrounding_box(box0, box1);
+    }
+
+    static void get_sphere_uv(const Vec3 &p, FloatType &u, FloatType &v)
+    {
+        auto theta = std::acos(-p.y);
+        auto phi = std::atan2(-p.z, p.x) + pi;
+        u = phi / (2 * pi);
+        v = theta / pi;
     }
 };

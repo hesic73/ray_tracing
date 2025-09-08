@@ -4,6 +4,7 @@
 #include "ray.h"
 #include "color.h"
 #include "rand_utils.h"
+#include "texture.h"
 
 struct Material
 {
@@ -15,7 +16,7 @@ struct Material
 
 struct Lambertian : public Material
 {
-    Lambertian(const Color &albedo) : albedo(albedo) {}
+    Lambertian(const Texture *albedo) : albedo(albedo) {}
 
     bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const override
     {
@@ -23,10 +24,10 @@ struct Lambertian : public Material
         if (scatter_direction.near_zero())
             scatter_direction = rec.normal;
         scattered = Ray(rec.point, scatter_direction, r_in.time);
-        attenuation = albedo;
+        attenuation = albedo->value(rec.u, rec.v, rec.point);
         return true;
     }
-    Color albedo;
+    const Texture *albedo;
 };
 
 struct Metal : public Material
