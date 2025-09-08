@@ -10,6 +10,7 @@ Tested on:
 ## Build & Run
 
 ```bash
+git submodule update --init --recursive .
 mkdir build && cd build
 cmake ..
 make
@@ -32,6 +33,7 @@ make
 - [spdlog](https://github.com/gabime/spdlog)
 - [stb](https://github.com/nothings/stb)
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
+- [oneTBB](https://github.com/uxlfoundation/oneTBB)
 
 ## Reference
 

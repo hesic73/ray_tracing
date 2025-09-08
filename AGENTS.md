@@ -14,6 +14,7 @@ This project uses **C++20**.
 ## Build & Run
 
 ```bash
+git submodule update --init --recursive .
 mkdir build && cd build
 cmake ..
 make
@@ -40,3 +41,8 @@ As a code-generation assistant, follow these rules when modifying the code:
 
 3. **Focus on Essentials ("Let It Crash")**
    Implement the requested functionality directly and efficiently. Do **not** add error handling, exception handling, or boundary checks unless explicitly instructed. Unexpected inputs or states should be allowed to fail naturally.
+
+
+## Others
+
+- Avoid `std::shared_ptr` except when it greatly simplifies lifetime management and does not hurt performance.

@@ -107,7 +107,7 @@ int main(int argc, char **argv)
     FloatType time1 = one_f;
 
     unsigned int num_threads = std::thread::hardware_concurrency(); // Default to all cores
-    
+
     try
     {
         fov = config["fov"].as<FloatType>();
@@ -131,9 +131,22 @@ int main(int argc, char **argv)
         samples_per_pixel = config["samples_per_pixel"].as<int>();
         max_depth = config["max_depth"].as<int>();
         gamma = config["gamma"].as<FloatType>();
-        
-        if (config["num_threads"]) {
-            num_threads = config["num_threads"].as<unsigned int>();
+
+        if (config["num_threads"])
+        {
+            unsigned int _num_threads = config["num_threads"].as<unsigned int>();
+            if (_num_threads > num_threads)
+            {
+                spdlog::warn("Requested num_threads {} exceeds hardware concurrency {}, using {}", _num_threads, num_threads, num_threads);
+            }
+            else if (_num_threads == 0)
+            {
+                spdlog::warn("Requested num_threads is 0, using hardware concurrency {}", num_threads);
+            }
+            else
+            {
+                num_threads = _num_threads;
+            }
         }
     }
     catch (const YAML::RepresentationException &e)
@@ -143,7 +156,7 @@ int main(int argc, char **argv)
     }
 
     tbb::global_control global_limit(tbb::global_control::max_allowed_parallelism, num_threads);
-    
+
     spdlog::info("Image dimensions: {}x{}", image_width, image_height);
     spdlog::info("Using {} threads for parallel rendering", num_threads);
 
