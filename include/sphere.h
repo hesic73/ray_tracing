@@ -3,21 +3,29 @@
 #include <cmath>
 
 #include "math/vec3.h"
+#include "math/mat4.h"
 #include "hittable.h"
 #include "common.h"
+#include "motion.h"
 
 struct Sphere : public Hittable
 {
-    Point3 center;
+    Mat4 transform;
+    Motion motion;
+    FloatType time0;
     FloatType radius;
     const Material *material;
 
-    Sphere(const Point3 &center, FloatType radius, const Material *material)
-        : center(center), radius(std::fmax(radius, FloatType(0))), material(material) {}
+    Sphere(const Mat4 &transform, FloatType radius, const Material *material, const Motion &motion = Motion(), FloatType time0 = zero_f)
+        : transform(transform), motion(motion), time0(time0), radius(std::fmax(radius, FloatType(0))), material(material) {}
+
+    Sphere(const Point3 &center, FloatType radius, const Material *material, const Motion &motion = Motion(), FloatType time0 = zero_f)
+        : transform(Mat4::translation(center)), motion(motion), time0(time0), radius(std::fmax(radius, FloatType(0))), material(material) {}
 
     bool hit(const Ray &r, Interval t_range, HitRecord &hit_record) const override
     {
-        Vec3 oc = r.origin - center;
+        Vec3 center_now = transform.get_translation() + (r.time - time0) * motion.linear;
+        Vec3 oc = r.origin - center_now;
         FloatType a = r.direction.squared_norm();
         FloatType half_b = Vec3::dot(r.direction, oc);
         FloatType c = oc.squared_norm() - radius * radius;
@@ -42,7 +50,7 @@ struct Sphere : public Hittable
 
         hit_record.t = root;
         hit_record.point = r.at(hit_record.t);
-        Vec3 outward_normal = (hit_record.point - center) / radius;
+        Vec3 outward_normal = (hit_record.point - center_now) / radius;
         hit_record.set_face_normal(r, outward_normal);
         hit_record.material = material;
 

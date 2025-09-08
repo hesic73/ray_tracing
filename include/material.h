@@ -22,7 +22,7 @@ struct Lambertian : public Material
         auto scatter_direction = rec.normal + random_unit_sphere();
         if (scatter_direction.near_zero())
             scatter_direction = rec.normal;
-        scattered = Ray(rec.point, scatter_direction);
+        scattered = Ray(rec.point, scatter_direction, r_in.time);
         attenuation = albedo;
         return true;
     }
@@ -37,7 +37,7 @@ struct Metal : public Material
     bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const override
     {
         Vec3 reflected = Vec3::reflect(Vec3::normalize(r_in.direction), rec.normal);
-        scattered = Ray(rec.point, reflected + fuzz * random_unit_sphere());
+        scattered = Ray(rec.point, reflected + fuzz * random_unit_sphere(), r_in.time);
         attenuation = albedo;
         return (Vec3::dot(scattered.direction, rec.normal) > 0);
     }
@@ -63,13 +63,13 @@ struct Dielectric : public Material
         if (cannot_refract || reflectance(cos_theta, ri) > random_float())
         {
             Vec3 reflected = Vec3::reflect(unit_direction, rec.normal);
-            scattered = Ray(rec.point, reflected);
+            scattered = Ray(rec.point, reflected, r_in.time);
             return true;
         }
         else
         {
             Vec3 refracted = Vec3::refract(unit_direction, rec.normal, ri);
-            scattered = Ray(rec.point, refracted);
+            scattered = Ray(rec.point, refracted, r_in.time);
             return true;
         }
     }
