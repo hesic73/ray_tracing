@@ -11,3 +11,5 @@ samples_per_pixel: 500
 max_depth: 50
 
 gamma: 0.5
+
+num_threads: 8

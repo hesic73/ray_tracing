@@ -22,6 +22,9 @@
 
 #include "my_renderer.h"
 
+#include <tbb/global_control.h>
+#include <thread>
+
 std::string format_duration(std::chrono::milliseconds duration)
 {
     auto total_ms = duration.count();
@@ -102,6 +105,9 @@ int main(int argc, char **argv)
     FloatType gamma;
     FloatType time0 = zero_f;
     FloatType time1 = one_f;
+
+    unsigned int num_threads = std::thread::hardware_concurrency(); // Default to all cores
+    
     try
     {
         fov = config["fov"].as<FloatType>();
@@ -125,6 +131,10 @@ int main(int argc, char **argv)
         samples_per_pixel = config["samples_per_pixel"].as<int>();
         max_depth = config["max_depth"].as<int>();
         gamma = config["gamma"].as<FloatType>();
+        
+        if (config["num_threads"]) {
+            num_threads = config["num_threads"].as<unsigned int>();
+        }
     }
     catch (const YAML::RepresentationException &e)
     {
@@ -132,7 +142,10 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    tbb::global_control global_limit(tbb::global_control::max_allowed_parallelism, num_threads);
+    
     spdlog::info("Image dimensions: {}x{}", image_width, image_height);
+    spdlog::info("Using {} threads for parallel rendering", num_threads);
 
     spdlog::info("Field of view: {}", fov);
     spdlog::info("Camera position: [{}, {}, {}]", camera_position[0], camera_position[1], camera_position[2]);

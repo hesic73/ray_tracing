@@ -12,6 +12,9 @@
 #include "material.h"
 #include "bvh.h"
 
+#include <tbb/parallel_for.h>
+#include <tbb/blocked_range2d.h>
+
 Color ray_color(const Ray &r, int depth, const Hittable &world)
 {
     if (depth <= 0)
@@ -42,34 +45,37 @@ void MyRenderer::render(
     auto objects = world.objects;
     BVH bvh(objects, camera.time1);
 
-    for (int j = 0; j < camera.image_height; ++j)
-    {
-        for (int i = 0; i < camera.image_width; ++i)
-        {
-            Color pixel_color_sum = Color::black();
+    tbb::parallel_for(
+        tbb::blocked_range2d<int>(0, camera.image_height, 0, camera.image_width),
+        [&](const tbb::blocked_range2d<int>& range) {
+            for (int j = range.rows().begin(); j != range.rows().end(); ++j) {
+                for (int i = range.cols().begin(); i != range.cols().end(); ++i) {
+                    Color pixel_color_sum = Color::black();
 
-            for (int sample = 0; sample < samples_per_pixel; ++sample)
-            {
-                FloatType random_u = random_float() - static_cast<FloatType>(0.5); // [-0.5, 0.5)
-                FloatType random_v = random_float() - static_cast<FloatType>(0.5); // [-0.5, 0.5)
+                    for (int sample = 0; sample < samples_per_pixel; ++sample)
+                    {
+                        FloatType random_u = random_float() - static_cast<FloatType>(0.5); // [-0.5, 0.5)
+                        FloatType random_v = random_float() - static_cast<FloatType>(0.5); // [-0.5, 0.5)
 
-                FloatType u = (static_cast<FloatType>(i) + static_cast<FloatType>(0.5) + random_u) / camera.image_width;
-                FloatType v = static_cast<FloatType>(1.0) - (static_cast<FloatType>(j) + static_cast<FloatType>(0.5) + random_v) / camera.image_height; // flip v for image coordinates
+                        FloatType u = (static_cast<FloatType>(i) + static_cast<FloatType>(0.5) + random_u) / camera.image_width;
+                        FloatType v = static_cast<FloatType>(1.0) - (static_cast<FloatType>(j) + static_cast<FloatType>(0.5) + random_v) / camera.image_height; // flip v for image coordinates
 
-                Ray r = camera.get_ray(u, v);
-                pixel_color_sum += ray_color(r, max_depth, bvh);
+                        Ray r = camera.get_ray(u, v);
+                        pixel_color_sum += ray_color(r, max_depth, bvh);
+                    }
+
+                    pixel_color_sum = pixel_color_sum / static_cast<FloatType>(samples_per_pixel);
+
+                    // Gamma correction
+                    pixel_color_sum = Color::pow(pixel_color_sum, gamma);
+
+                    auto pixel_color = pixel_color_sum.to_uint8();
+
+                    buffer[3 * (j * camera.image_width + i) + 0] = pixel_color[0];
+                    buffer[3 * (j * camera.image_width + i) + 1] = pixel_color[1];
+                    buffer[3 * (j * camera.image_width + i) + 2] = pixel_color[2];
+                }
             }
-
-            pixel_color_sum = pixel_color_sum / static_cast<FloatType>(samples_per_pixel);
-
-            // Gamma correction
-            pixel_color_sum = Color::pow(pixel_color_sum, gamma);
-
-            auto pixel_color = pixel_color_sum.to_uint8();
-
-            buffer[3 * (j * camera.image_width + i) + 0] = pixel_color[0];
-            buffer[3 * (j * camera.image_width + i) + 1] = pixel_color[1];
-            buffer[3 * (j * camera.image_width + i) + 2] = pixel_color[2];
         }
-    }
+    );
 }

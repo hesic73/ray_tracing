@@ -25,7 +25,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(yaml-cpp)
 
-
+# oneTBB
+add_subdirectory(third_party/oneTBB)
 
 file(GLOB SRC_FILES "src/*.cpp")
 add_executable(ray_tracing main.cpp ${SRC_FILES})
@@ -43,5 +44,6 @@ target_link_libraries(
     PRIVATE
     spdlog::spdlog
     yaml-cpp::yaml-cpp
+    TBB::tbb
 )
 
