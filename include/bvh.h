@@ -42,16 +42,22 @@ private:
     {
         Node node;
         size_t object_span = end - start;
-        int axis = static_cast<int>(3 * random_float());
+        
+        // Choose the longest axis instead of random
+        int axis = 0;
+        if (object_span > 1) {
+            AABB total_box = AABB::empty();
+            for (size_t i = start; i < end; ++i) {
+                total_box = AABB::surrounding_box(total_box, objects[i]->bounding_box(time1));
+            }
+            axis = total_box.longest_axis();
+        }
+        
         auto comparator = [axis, time1](const std::shared_ptr<Hittable> &a, const std::shared_ptr<Hittable> &b)
         {
             const auto box_a = a->bounding_box(time1);
             const auto box_b = b->bounding_box(time1);
-            if (axis == 0)
-                return box_a.x.min < box_b.x.min;
-            if (axis == 1)
-                return box_a.y.min < box_b.y.min;
-            return box_a.z.min < box_b.z.min;
+            return box_a.axis(axis).min < box_b.axis(axis).min;
         };
 
         if (object_span == 1)
