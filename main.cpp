@@ -15,10 +15,7 @@
 #include "camera.h"
 #include "common.h"
 
-#include "hittable.h"
-#include "hittable_list.h"
-#include "sphere.h"
-#include "material.h"
+#include "scene/scene_factory.h"
 
 #include "my_renderer.h"
 
@@ -173,64 +170,10 @@ int main(int argc, char **argv)
 
     constexpr int channels = 3;
 
-    std::vector<std::unique_ptr<Material>> materials;
-    HittableList world;
-
-    auto ground_material = std::make_unique<Lambertian>(Color(0.5, 0.5, 0.5));
-    world.add(std::make_shared<Sphere>(Point3(0, -1000, 0), 1000, ground_material.get(), Motion(), time0));
-    materials.push_back(std::move(ground_material));
-
-    for (int a = -11; a < 11; a++)
-    {
-        for (int b = -11; b < 11; b++)
-        {
-            auto choose_mat = random_float();
-            Point3 center(a + 0.9 * random_float(), 0.2, b + 0.9 * random_float());
-
-            if ((center - Point3(4, 0.2, 0)).norm() > 0.9)
-            {
-                std::unique_ptr<Material> sphere_material;
-
-                if (choose_mat < 0.8)
-                {
-                    // diffuse
-                    auto albedo = Color::random() * Color::random();
-                    sphere_material = std::make_unique<Lambertian>(albedo);
-                    auto motion = Motion(Vec3(0, random_float(0, 0.5), 0));
-                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material.get(), motion, time0));
-                    materials.push_back(std::move(sphere_material));
-                }
-                else if (choose_mat < 0.95)
-                {
-                    // metal
-                    auto albedo = Color::random(0.5, 1);
-                    auto fuzz = random_float(0, 0.5);
-                    sphere_material = std::make_unique<Metal>(albedo, fuzz);
-                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material.get(), Motion(), time0));
-                    materials.push_back(std::move(sphere_material));
-                }
-                else
-                {
-                    // glass
-                    sphere_material = std::make_unique<Dielectric>(1.5);
-                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material.get(), Motion(), time0));
-                    materials.push_back(std::move(sphere_material));
-                }
-            }
-        }
-    }
-
-    auto material1 = std::make_unique<Dielectric>(1.5);
-    world.add(std::make_shared<Sphere>(Point3(0, 1, 0), 1.0, material1.get(), Motion(), time0));
-    materials.push_back(std::move(material1));
-
-    auto material2 = std::make_unique<Lambertian>(Color(0.4, 0.2, 0.1));
-    world.add(std::make_shared<Sphere>(Point3(-4, 1, 0), 1.0, material2.get(), Motion(), time0));
-    materials.push_back(std::move(material2));
-
-    auto material3 = std::make_unique<Metal>(Color(0.7, 0.6, 0.5), 0.0);
-    world.add(std::make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3.get(), Motion(), time0));
-    materials.push_back(std::move(material3));
+    int scene_index = 0;
+    if (config["scene"])
+        scene_index = config["scene"].as<int>();
+    auto scene = create_scene(static_cast<SceneType>(scene_index), time0, time1);
 
     Camera camera(image_width, image_height, fov, focus_dist, defocus_angle, Mat4::identity(), time0, time1);
     camera.set_position(Vec3(camera_position[0], camera_position[1], camera_position[2]));
@@ -242,7 +185,7 @@ int main(int argc, char **argv)
     renderer = std::make_unique<MyRenderer>(samples_per_pixel, max_depth, gamma);
 
     auto start_time = std::chrono::high_resolution_clock::now();
-    renderer->render(camera, world, pixels.data());
+    renderer->render(camera, scene.world, pixels.data());
     auto end_time = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);

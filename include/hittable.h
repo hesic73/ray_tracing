@@ -13,6 +13,8 @@ struct HitRecord
     Vec3 normal;     // normal at the intersection point
     FloatType t;     // ray parameter at the intersection
     bool front_face; // whether the intersection is on the front face
+    FloatType u;
+    FloatType v;
 
     const Material *material;
 
