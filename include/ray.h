@@ -6,8 +6,10 @@ struct Ray
 {
     Point3 origin;
     Vec3 direction;
+    FloatType time;
 
-    Ray(const Point3 &origin, const Vec3 &direction) : origin(origin), direction(direction) {}
+    Ray(const Point3 &origin, const Vec3 &direction, FloatType time = zero_f)
+        : origin(origin), direction(direction), time(time) {}
 
     Point3 at(FloatType t) const
     {
@@ -20,5 +22,5 @@ struct Ray
     }
 
 private:
-    Ray() : origin(Point3::uninitialized()), direction(Vec3::uninitialized()) {}
+    Ray() : origin(Point3::uninitialized()), direction(Vec3::uninitialized()), time(zero_f) {}
 };

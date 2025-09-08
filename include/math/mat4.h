@@ -79,9 +79,32 @@ struct Mat4
         return Vec3(x, y, z);
     }
 
+    void set_translation(const Vec3 &t)
+    {
+        m[0][3] = t.x;
+        m[1][3] = t.y;
+        m[2][3] = t.z;
+    }
+
     Vec3 get_translation() const
     {
         return Vec3(m[0][3], m[1][3], m[2][3]);
+    }
+
+    void set_rotation(const Mat3 &r3)
+    {
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                m[i][j] = r3.m[i][j];
+    }
+
+    Mat3 get_rotation() const
+    {
+        Mat3 r{};
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                r.m[i][j] = m[i][j];
+        return r;
     }
 };
 
