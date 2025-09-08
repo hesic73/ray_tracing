@@ -1,4 +1,4 @@
-#include "vec3.h"
+#include "math/vec3.h"
 
 // algebraic operations
 Vec3 operator+(const Vec3 &u, const Vec3 &v)

@@ -1,6 +1,6 @@
 #include "my_renderer.h"
 
-#include "vec3.h"
+#include "math/vec3.h"
 #include "ray.h"
 #include "color.h"
 #include "camera.h"
@@ -13,27 +13,26 @@
 
 #include "sphere.h"
 
-ColorFloat ray_color(const Ray &r, int depth, const Hittable &world)
+Color ray_color(const Ray &r, int depth, const Hittable &world)
 {
     if (depth <= 0)
-        return ColorFloat::black();
+        return Color::black();
     HitRecord hit_record = HitRecord::uninitialized();
     if (world.hit(r, Interval(static_cast<FloatType>(0.001), infinity_f), hit_record))
     {
-
         Ray scattered = Ray::uninitialized();
-        ColorFloat attenuation = ColorFloat::uninitialized();
+        Color attenuation = Color::uninitialized();
         if (hit_record.material && hit_record.material->scatter(r, hit_record, attenuation, scattered))
         {
             return attenuation * ray_color(scattered, depth - 1, world);
         }
         // No scattering, return black
-        return ColorFloat::black();
+        return Color::black();
     }
 
     Vec3 unit_direction = Vec3::normalize(r.direction);
     auto a = static_cast<FloatType>(0.5) * (unit_direction.y + one_f);
-    return (one_f - a) * ColorFloat::white() + a * ColorFloat(static_cast<FloatType>(0.5), static_cast<FloatType>(0.7), static_cast<FloatType>(1.0));
+    return (one_f - a) * Color::white() + a * Color(static_cast<FloatType>(0.5), static_cast<FloatType>(0.7), static_cast<FloatType>(1.0));
 }
 
 void MyRenderer::render(
@@ -45,7 +44,7 @@ void MyRenderer::render(
     {
         for (int i = 0; i < camera.image_width; ++i)
         {
-            ColorFloat pixel_color_sum = ColorFloat::black();
+            Color pixel_color_sum = Color::black();
 
             for (int sample = 0; sample < samples_per_pixel; ++sample)
             {
@@ -62,13 +61,13 @@ void MyRenderer::render(
             pixel_color_sum = pixel_color_sum / static_cast<FloatType>(samples_per_pixel);
 
             // Gamma correction
-            pixel_color_sum = ColorFloat::pow(pixel_color_sum, gamma);
+            pixel_color_sum = Color::pow(pixel_color_sum, gamma);
 
-            ColorUint8 pixel_color = pixel_color_sum.to_uint8();
+            auto pixel_color = pixel_color_sum.to_uint8();
 
-            buffer[3 * (j * camera.image_width + i) + 0] = pixel_color.r;
-            buffer[3 * (j * camera.image_width + i) + 1] = pixel_color.g;
-            buffer[3 * (j * camera.image_width + i) + 2] = pixel_color.b;
+            buffer[3 * (j * camera.image_width + i) + 0] = pixel_color[0];
+            buffer[3 * (j * camera.image_width + i) + 1] = pixel_color[1];
+            buffer[3 * (j * camera.image_width + i) + 2] = pixel_color[2];
         }
     }
 }

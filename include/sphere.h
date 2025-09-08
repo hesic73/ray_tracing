@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include "vec3.h"
+#include "math/vec3.h"
 #include "hittable.h"
 #include "common.h"
 

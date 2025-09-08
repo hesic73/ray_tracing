@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common.h"
-#include "vec3.h"
+#include "math/vec3.h"
 
 FloatType random_float(); // in [0,1)
 

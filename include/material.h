@@ -10,14 +10,14 @@ struct Material
     virtual ~Material() = default;
 
     virtual bool scatter(
-        const Ray &r_in, const HitRecord &rec, ColorFloat &attenuation, Ray &scattered) const = 0;
+        const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const = 0;
 };
 
 struct Lambertian : public Material
 {
-    Lambertian(const ColorFloat &albedo) : albedo(albedo) {}
+    Lambertian(const Color &albedo) : albedo(albedo) {}
 
-    bool scatter(const Ray &r_in, const HitRecord &rec, ColorFloat &attenuation, Ray &scattered) const override
+    bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const override
     {
         auto scatter_direction = rec.normal + random_unit_sphere();
         if (scatter_direction.near_zero())
@@ -26,15 +26,15 @@ struct Lambertian : public Material
         attenuation = albedo;
         return true;
     }
-    ColorFloat albedo;
+    Color albedo;
 };
 
 struct Metal : public Material
 {
-    Metal(const ColorFloat &albedo, FloatType fuzz)
+    Metal(const Color &albedo, FloatType fuzz)
         : albedo(albedo), fuzz(fuzz < 0 ? 0 : (fuzz < 1 ? fuzz : 1)) {}
 
-    bool scatter(const Ray &r_in, const HitRecord &rec, ColorFloat &attenuation, Ray &scattered) const override
+    bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const override
     {
         Vec3 reflected = Vec3::reflect(Vec3::normalize(r_in.direction), rec.normal);
         scattered = Ray(rec.point, reflected + fuzz * random_unit_sphere());
@@ -42,7 +42,7 @@ struct Metal : public Material
         return (Vec3::dot(scattered.direction, rec.normal) > 0);
     }
 
-    ColorFloat albedo;
+    Color albedo;
     FloatType fuzz;
 };
 
@@ -50,9 +50,9 @@ struct Dielectric : public Material
 {
     Dielectric(FloatType refraction_index) : refraction_index(refraction_index) {}
 
-    bool scatter(const Ray &r_in, const HitRecord &rec, ColorFloat &attenuation, Ray &scattered) const override
+    bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const override
     {
-        attenuation = ColorFloat(1.0, 1.0, 1.0);
+        attenuation = Color(1.0, 1.0, 1.0);
         FloatType ri = rec.front_face ? (1.0 / refraction_index) : refraction_index;
 
         Vec3 unit_direction = Vec3::normalize(r_in.direction);
@@ -84,3 +84,4 @@ struct Dielectric : public Material
         return r0 + (1 - r0) * std::pow((1 - cosine), 5);
     }
 };
+

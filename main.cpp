@@ -11,7 +11,7 @@
 #include "yaml-cpp/yaml.h"
 #include "yaml-cpp/exceptions.h"
 
-#include "vec3.h"
+#include "math/vec3.h"
 #include "camera.h"
 #include "common.h"
 
@@ -148,7 +148,7 @@ int main(int argc, char **argv)
     std::vector<std::unique_ptr<Material>> materials;
     HittableList world;
 
-    auto ground_material = std::make_unique<Lambertian>(ColorFloat(0.5, 0.5, 0.5));
+    auto ground_material = std::make_unique<Lambertian>(Color(0.5, 0.5, 0.5));
     world.add(std::make_shared<Sphere>(Point3(0, -1000, 0), 1000, ground_material.get()));
     materials.push_back(std::move(ground_material));
 
@@ -166,7 +166,7 @@ int main(int argc, char **argv)
                 if (choose_mat < 0.8)
                 {
                     // diffuse
-                    auto albedo = ColorFloat::random() * ColorFloat::random();
+                    auto albedo = Color::random() * Color::random();
                     sphere_material = std::make_unique<Lambertian>(albedo);
                     world.add(std::make_shared<Sphere>(center, 0.2, sphere_material.get()));
                     materials.push_back(std::move(sphere_material));
@@ -174,7 +174,7 @@ int main(int argc, char **argv)
                 else if (choose_mat < 0.95)
                 {
                     // metal
-                    auto albedo = ColorFloat::random(0.5, 1);
+                    auto albedo = Color::random(0.5, 1);
                     auto fuzz = random_float(0, 0.5);
                     sphere_material = std::make_unique<Metal>(albedo, fuzz);
                     world.add(std::make_shared<Sphere>(center, 0.2, sphere_material.get()));
@@ -195,11 +195,11 @@ int main(int argc, char **argv)
     world.add(std::make_shared<Sphere>(Point3(0, 1, 0), 1.0, material1.get()));
     materials.push_back(std::move(material1));
 
-    auto material2 = std::make_unique<Lambertian>(ColorFloat(0.4, 0.2, 0.1));
+    auto material2 = std::make_unique<Lambertian>(Color(0.4, 0.2, 0.1));
     world.add(std::make_shared<Sphere>(Point3(-4, 1, 0), 1.0, material2.get()));
     materials.push_back(std::move(material2));
 
-    auto material3 = std::make_unique<Metal>(ColorFloat(0.7, 0.6, 0.5), 0.0);
+    auto material3 = std::make_unique<Metal>(Color(0.7, 0.6, 0.5), 0.0);
     world.add(std::make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3.get()));
     materials.push_back(std::move(material3));
 
