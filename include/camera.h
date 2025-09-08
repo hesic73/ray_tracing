@@ -2,10 +2,10 @@
 
 #include <cstdint>
 
-#include "vec3.h"
+#include "math/vec3.h"
 #include "ray.h"
-#include "transform.h"
-#include "math_utils.h"
+#include "math/math_utils.h"
+#include "math/mat4.h"
 #include "rand_utils.h"
 
 struct Camera
@@ -20,7 +20,7 @@ struct Camera
     const FloatType viewport_height;
     const FloatType viewport_width;
 
-    Transform pose;
+    Mat4 pose;
 
     // Viewport and (u, v) convention:
     //   - The viewport is a rectangle in 3D space, at z = -focal_dist in camera local space.
@@ -35,7 +35,7 @@ struct Camera
         FloatType fov,
         FloatType focal_dist = static_cast<FloatType>(1.0),
         FloatType defocus_angle = static_cast<FloatType>(0.0),
-        const Transform &pose = Transform::identity())
+        const Mat4 &pose = Mat4::identity())
         : image_width(image_width),
           image_height(image_height),
           aspect_ratio(static_cast<FloatType>(image_width) / image_height),
@@ -49,17 +49,21 @@ struct Camera
 
     void look_at(const Vec3 &target, const Vec3 &world_up = Vec3(0, 1, 0))
     {
-        pose = MathUtils::look_at(pose.position, target, world_up);
+        pose = MathUtils::look_at(pose.get_translation(), target, world_up);
     }
 
     void set_position(const Vec3 &position)
     {
-        pose.position = position;
+        pose.m[0][3] = position.x;
+        pose.m[1][3] = position.y;
+        pose.m[2][3] = position.z;
     }
 
-    void set_rotation(const Quaternion &rotation)
+    void set_rotation(const Mat3 &rotation)
     {
-        pose.rotation = rotation;
+        Vec3 pos = pose.get_translation();
+        pose = Mat4::rotation(rotation);
+        set_position(pos);
     }
 
     Ray get_ray(FloatType u, FloatType v) const
@@ -71,15 +75,16 @@ struct Camera
 
         Vec3 world_point = MathUtils::transform_point(pose, local_point);
 
-        Vec3 ray_origin = pose.position;
+        Vec3 ray_origin = pose.get_translation();
         if (defocus_radius > static_cast<FloatType>(1e-8))
         {
             Vec3 p = random_in_unit_disk();
             Vec3 defocus_offset = defocus_radius * p;
-            ray_origin = pose.position + defocus_offset;
+            ray_origin = pose.get_translation() + defocus_offset;
         }
 
         Vec3 direction = Vec3::normalize(world_point - ray_origin);
         return Ray(ray_origin, direction);
     }
 };
+
