@@ -3,6 +3,7 @@
 #include "ray.h"
 #include "interval.h"
 #include "common.h"
+#include "aabb.h"
 
 class Material;
 
@@ -37,4 +38,6 @@ struct Hittable
 {
     virtual ~Hittable() = default;
     virtual bool hit(const Ray &r, Interval t_range, HitRecord &hit_record) const = 0;
+    virtual AABB bounding_box() const = 0;
+    virtual AABB bounding_box(FloatType time1) const = 0;
 };

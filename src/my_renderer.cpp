@@ -10,8 +10,7 @@
 #include "hittable.h"
 #include "hittable_list.h"
 #include "material.h"
-
-#include "sphere.h"
+#include "bvh.h"
 
 Color ray_color(const Ray &r, int depth, const Hittable &world)
 {
@@ -37,9 +36,12 @@ Color ray_color(const Ray &r, int depth, const Hittable &world)
 
 void MyRenderer::render(
     const Camera &camera,
-    const Hittable &world,
+    const HittableList &world,
     std::uint8_t *buffer) const
 {
+    auto objects = world.objects;
+    BVH bvh(objects, camera.time1);
+
     for (int j = 0; j < camera.image_height; ++j)
     {
         for (int i = 0; i < camera.image_width; ++i)
@@ -55,7 +57,7 @@ void MyRenderer::render(
                 FloatType v = static_cast<FloatType>(1.0) - (static_cast<FloatType>(j) + static_cast<FloatType>(0.5) + random_v) / camera.image_height; // flip v for image coordinates
 
                 Ray r = camera.get_ray(u, v);
-                pixel_color_sum += ray_color(r, max_depth, world);
+                pixel_color_sum += ray_color(r, max_depth, bvh);
             }
 
             pixel_color_sum = pixel_color_sum / static_cast<FloatType>(samples_per_pixel);

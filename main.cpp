@@ -100,6 +100,8 @@ int main(int argc, char **argv)
     int max_depth;
 
     FloatType gamma;
+    FloatType time0 = zero_f;
+    FloatType time1 = one_f;
     try
     {
         fov = config["fov"].as<FloatType>();
@@ -149,7 +151,7 @@ int main(int argc, char **argv)
     HittableList world;
 
     auto ground_material = std::make_unique<Lambertian>(Color(0.5, 0.5, 0.5));
-    world.add(std::make_shared<Sphere>(Point3(0, -1000, 0), 1000, ground_material.get()));
+    world.add(std::make_shared<Sphere>(Point3(0, -1000, 0), 1000, ground_material.get(), Motion(), time0));
     materials.push_back(std::move(ground_material));
 
     for (int a = -11; a < 11; a++)
@@ -169,7 +171,7 @@ int main(int argc, char **argv)
                     auto albedo = Color::random() * Color::random();
                     sphere_material = std::make_unique<Lambertian>(albedo);
                     auto motion = Motion(Vec3(0, random_float(0, 0.5), 0));
-                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material.get(), motion));
+                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material.get(), motion, time0));
                     materials.push_back(std::move(sphere_material));
                 }
                 else if (choose_mat < 0.95)
@@ -178,14 +180,14 @@ int main(int argc, char **argv)
                     auto albedo = Color::random(0.5, 1);
                     auto fuzz = random_float(0, 0.5);
                     sphere_material = std::make_unique<Metal>(albedo, fuzz);
-                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material.get()));
+                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material.get(), Motion(), time0));
                     materials.push_back(std::move(sphere_material));
                 }
                 else
                 {
                     // glass
                     sphere_material = std::make_unique<Dielectric>(1.5);
-                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material.get()));
+                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material.get(), Motion(), time0));
                     materials.push_back(std::move(sphere_material));
                 }
             }
@@ -193,18 +195,18 @@ int main(int argc, char **argv)
     }
 
     auto material1 = std::make_unique<Dielectric>(1.5);
-    world.add(std::make_shared<Sphere>(Point3(0, 1, 0), 1.0, material1.get()));
+    world.add(std::make_shared<Sphere>(Point3(0, 1, 0), 1.0, material1.get(), Motion(), time0));
     materials.push_back(std::move(material1));
 
     auto material2 = std::make_unique<Lambertian>(Color(0.4, 0.2, 0.1));
-    world.add(std::make_shared<Sphere>(Point3(-4, 1, 0), 1.0, material2.get()));
+    world.add(std::make_shared<Sphere>(Point3(-4, 1, 0), 1.0, material2.get(), Motion(), time0));
     materials.push_back(std::move(material2));
 
     auto material3 = std::make_unique<Metal>(Color(0.7, 0.6, 0.5), 0.0);
-    world.add(std::make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3.get()));
+    world.add(std::make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3.get(), Motion(), time0));
     materials.push_back(std::move(material3));
 
-    Camera camera(image_width, image_height, fov, focus_dist, defocus_angle);
+    Camera camera(image_width, image_height, fov, focus_dist, defocus_angle, Mat4::identity(), time0, time1);
     camera.set_position(Vec3(camera_position[0], camera_position[1], camera_position[2]));
     camera.look_at(Vec3(camera_look_at[0], camera_look_at[1], camera_look_at[2]));
 

@@ -56,4 +56,21 @@ struct Sphere : public Hittable
 
         return true;
     }
+
+    AABB bounding_box() const override
+    {
+        Vec3 center = transform.get_translation();
+        Vec3 r_vec(radius, radius, radius);
+        return AABB(center - r_vec, center + r_vec);
+    }
+
+    AABB bounding_box(FloatType t1) const override
+    {
+        Vec3 center0 = transform.get_translation();
+        Vec3 center1 = transform.get_translation() + (t1 - time0) * motion.linear;
+        Vec3 r_vec(radius, radius, radius);
+        AABB box0(center0 - r_vec, center0 + r_vec);
+        AABB box1(center1 - r_vec, center1 + r_vec);
+        return AABB::surrounding_box(box0, box1);
+    }
 };
