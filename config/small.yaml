@@ -1,0 +1,13 @@
+image_width: 400
+image_height: 225
+
+fov: 20
+camera_position: [13, 2, 3]
+camera_look_at: [0, 0, 0]
+focus_dist: 10.0
+defocus_angle: 0.6
+
+samples_per_pixel: 500
+max_depth: 50
+
+gamma: 0.5

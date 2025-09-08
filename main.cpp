@@ -168,7 +168,8 @@ int main(int argc, char **argv)
                     // diffuse
                     auto albedo = Color::random() * Color::random();
                     sphere_material = std::make_unique<Lambertian>(albedo);
-                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material.get()));
+                    auto motion = Motion(Vec3(0, random_float(0, 0.5), 0));
+                    world.add(std::make_shared<Sphere>(center, 0.2, sphere_material.get(), motion));
                     materials.push_back(std::move(sphere_material));
                 }
                 else if (choose_mat < 0.95)
