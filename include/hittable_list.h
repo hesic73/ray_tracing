@@ -33,4 +33,24 @@ struct HittableList : public Hittable
 
         return hit_anything;
     }
+
+    AABB bounding_box() const override
+    {
+        if (objects.empty())
+            return AABB::empty();
+        AABB box = objects[0]->bounding_box();
+        for (size_t i = 1; i < objects.size(); ++i)
+            box = AABB::surrounding_box(box, objects[i]->bounding_box());
+        return box;
+    }
+
+    AABB bounding_box(FloatType t1) const override
+    {
+        if (objects.empty())
+            return AABB::empty();
+        AABB box = objects[0]->bounding_box(t1);
+        for (size_t i = 1; i < objects.size(); ++i)
+            box = AABB::surrounding_box(box, objects[i]->bounding_box(t1));
+        return box;
+    }
 };

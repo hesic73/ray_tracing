@@ -10,7 +10,7 @@ public:
         : samples_per_pixel(samples_per_pixel), max_depth(max_depth), gamma(gamma) {}
     void render(
         const Camera &camera,
-        const Hittable &world,
+        const HittableList &world,
         std::uint8_t *buffer) const override;
 private:
     int samples_per_pixel;
