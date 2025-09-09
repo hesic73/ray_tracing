@@ -66,6 +66,7 @@ struct Mat4
         return r;
     }
 
+    // Apply the full affine transform to a point (translation included).
     Vec3 transform_point(const Vec3 &v) const
     {
         FloatType x = m[0][0]*v.x + m[0][1]*v.y + m[0][2]*v.z + m[0][3];
@@ -77,6 +78,57 @@ struct Mat4
             x /= w; y /= w; z /= w;
         }
         return Vec3(x, y, z);
+    }
+
+    // Transform a direction vector (translation ignored).
+    Vec3 transform_vector(const Vec3 &v) const
+    {
+        return Vec3(
+            m[0][0]*v.x + m[0][1]*v.y + m[0][2]*v.z,
+            m[1][0]*v.x + m[1][1]*v.y + m[1][2]*v.z,
+            m[2][0]*v.x + m[2][1]*v.y + m[2][2]*v.z);
+    }
+
+    Mat4 transpose() const
+    {
+        Mat4 r = *this;
+        std::swap(r.m[0][1], r.m[1][0]);
+        std::swap(r.m[0][2], r.m[2][0]);
+        std::swap(r.m[0][3], r.m[3][0]);
+        std::swap(r.m[1][2], r.m[2][1]);
+        std::swap(r.m[1][3], r.m[3][1]);
+        std::swap(r.m[2][3], r.m[3][2]);
+        return r;
+    }
+
+    Mat4 inverse() const
+    {
+        Mat4 inv{};
+        const FloatType *a = &m[0][0];
+        FloatType invm[16];
+
+        invm[0] = a[5] * a[10] * a[15] - a[5] * a[11] * a[14] - a[9] * a[6] * a[15] + a[9] * a[7] * a[14] + a[13] * a[6] * a[11] - a[13] * a[7] * a[10];
+        invm[4] = -a[4] * a[10] * a[15] + a[4] * a[11] * a[14] + a[8] * a[6] * a[15] - a[8] * a[7] * a[14] - a[12] * a[6] * a[11] + a[12] * a[7] * a[10];
+        invm[8] = a[4] * a[9] * a[15] - a[4] * a[11] * a[13] - a[8] * a[5] * a[15] + a[8] * a[7] * a[13] + a[12] * a[5] * a[11] - a[12] * a[7] * a[9];
+        invm[12] = -a[4] * a[9] * a[14] + a[4] * a[10] * a[13] + a[8] * a[5] * a[14] - a[8] * a[6] * a[13] - a[12] * a[5] * a[10] + a[12] * a[6] * a[9];
+        invm[1] = -a[1] * a[10] * a[15] + a[1] * a[11] * a[14] + a[9] * a[2] * a[15] - a[9] * a[3] * a[14] - a[13] * a[2] * a[11] + a[13] * a[3] * a[10];
+        invm[5] = a[0] * a[10] * a[15] - a[0] * a[11] * a[14] - a[8] * a[2] * a[15] + a[8] * a[3] * a[14] + a[12] * a[2] * a[11] - a[12] * a[3] * a[10];
+        invm[9] = -a[0] * a[9] * a[15] + a[0] * a[11] * a[13] + a[8] * a[1] * a[15] - a[8] * a[3] * a[13] - a[12] * a[1] * a[11] + a[12] * a[3] * a[9];
+        invm[13] = a[0] * a[9] * a[14] - a[0] * a[10] * a[13] - a[8] * a[1] * a[14] + a[8] * a[2] * a[13] + a[12] * a[1] * a[10] - a[12] * a[2] * a[9];
+        invm[2] = a[1] * a[6] * a[15] - a[1] * a[7] * a[14] - a[5] * a[2] * a[15] + a[5] * a[3] * a[14] + a[13] * a[2] * a[7] - a[13] * a[3] * a[6];
+        invm[6] = -a[0] * a[6] * a[15] + a[0] * a[7] * a[14] + a[4] * a[2] * a[15] - a[4] * a[3] * a[14] - a[12] * a[2] * a[7] + a[12] * a[3] * a[6];
+        invm[10] = a[0] * a[5] * a[15] - a[0] * a[7] * a[13] - a[4] * a[1] * a[15] + a[4] * a[3] * a[13] + a[12] * a[1] * a[7] - a[12] * a[3] * a[5];
+        invm[14] = -a[0] * a[5] * a[14] + a[0] * a[6] * a[13] + a[4] * a[1] * a[14] - a[4] * a[2] * a[13] - a[12] * a[1] * a[6] + a[12] * a[2] * a[5];
+        invm[3] = -a[1] * a[6] * a[11] + a[1] * a[7] * a[10] + a[5] * a[2] * a[11] - a[5] * a[3] * a[10] - a[9] * a[2] * a[7] + a[9] * a[3] * a[6];
+        invm[7] = a[0] * a[6] * a[11] - a[0] * a[7] * a[10] - a[4] * a[2] * a[11] + a[4] * a[3] * a[10] + a[8] * a[2] * a[7] - a[8] * a[3] * a[6];
+        invm[11] = -a[0] * a[5] * a[11] + a[0] * a[7] * a[9] + a[4] * a[1] * a[11] - a[4] * a[3] * a[9] - a[8] * a[1] * a[7] + a[8] * a[3] * a[5];
+        invm[15] = a[0] * a[5] * a[10] - a[0] * a[6] * a[9] - a[4] * a[1] * a[10] + a[4] * a[2] * a[9] + a[8] * a[1] * a[6] - a[8] * a[2] * a[5];
+
+        FloatType det = a[0] * invm[0] + a[1] * invm[4] + a[2] * invm[8] + a[3] * invm[12];
+        FloatType inv_det = one_f / det;
+        for (int i = 0; i < 16; ++i)
+            (&inv.m[0][0])[i] = invm[i] * inv_det;
+        return inv;
     }
 
     void set_translation(const Vec3 &t)
