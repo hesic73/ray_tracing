@@ -229,7 +229,8 @@ static std::shared_ptr<Hittable> make_box(const Point3 &a, const Point3 &b, cons
     sides->add(std::make_shared<Quad>(Point3(min.x, max.y, min.z), Vec3(max.x - min.x, 0, 0), Vec3(0, 0, max.z - min.z), mat));
     sides->add(std::make_shared<Quad>(Point3(min.x, min.y, min.z), Vec3(0, 0, max.z - min.z), Vec3(0, max.y - min.y, 0), mat));
     sides->add(std::make_shared<Quad>(Point3(max.x, min.y, min.z), Vec3(0, 0, max.z - min.z), Vec3(0, max.y - min.y, 0), mat));
-    sides->add(std::make_shared<Quad>(Point3(min.x, min.y, max.z), Vec3(0, 0, -(max.z - min.z)), Vec3(0, max.y - min.y, 0), mat));
+    // Bottom face (y = min.y)
+    sides->add(std::make_shared<Quad>(Point3(min.x, min.y, min.z), Vec3(max.x - min.x, 0, 0), Vec3(0, 0, max.z - min.z), mat));
     return sides;
 }
 
@@ -298,7 +299,7 @@ static std::unique_ptr<Scene> cornell_smoke_scene(FloatType time0, FloatType tim
     auto red_tex = std::make_unique<SolidColorTexture>(Color(0.65, 0.05, 0.05));
     auto white_tex = std::make_unique<SolidColorTexture>(Color(0.73, 0.73, 0.73));
     auto green_tex = std::make_unique<SolidColorTexture>(Color(0.12, 0.45, 0.15));
-    auto light_tex = std::make_unique<SolidColorTexture>(Color(15, 15, 15));
+    auto light_tex = std::make_unique<SolidColorTexture>(Color(7, 7, 7));
 
     const Texture *red_ptr = red_tex.get();
     const Texture *white_ptr = white_tex.get();
@@ -317,9 +318,9 @@ static std::unique_ptr<Scene> cornell_smoke_scene(FloatType time0, FloatType tim
 
     scene->world.add(std::make_shared<Quad>(Point3(555, 0, 0), Vec3(0, 555, 0), Vec3(0, 0, 555), green.get()));
     scene->world.add(std::make_shared<Quad>(Point3(0, 0, 0), Vec3(0, 555, 0), Vec3(0, 0, 555), red.get()));
-    scene->world.add(std::make_shared<Quad>(Point3(343, 554, 332), Vec3(-130, 0, 0), Vec3(0, 0, -105), light.get()));
+    scene->world.add(std::make_shared<Quad>(Point3(113, 554, 127), Vec3(330, 0, 0), Vec3(0, 0, 305), light.get()));
+    scene->world.add(std::make_shared<Quad>(Point3(0, 555, 0), Vec3(555, 0, 0), Vec3(0, 0, 555), white.get()));
     scene->world.add(std::make_shared<Quad>(Point3(0, 0, 0), Vec3(555, 0, 0), Vec3(0, 0, 555), white.get()));
-    scene->world.add(std::make_shared<Quad>(Point3(555, 555, 555), Vec3(-555, 0, 0), Vec3(0, 0, -555), white.get()));
     scene->world.add(std::make_shared<Quad>(Point3(0, 0, 555), Vec3(555, 0, 0), Vec3(0, 555, 0), white.get()));
 
     auto box1 = make_box(Point3(0, 0, 0), Point3(165, 330, 165), white.get());

@@ -54,3 +54,4 @@ As a code-generation assistant, follow these rules when modifying the code:
 ## Others
 
 - Avoid `std::shared_ptr` except when it greatly simplifies lifetime management and does not hurt performance.
+- Code comments should be written in English, unless I explicitly require the agent to use another language (Chinese).
