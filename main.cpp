@@ -185,7 +185,7 @@ int main(int argc, char **argv)
     renderer = std::make_unique<MyRenderer>(samples_per_pixel, max_depth, gamma);
 
     auto start_time = std::chrono::high_resolution_clock::now();
-    renderer->render(camera, scene.world, pixels.data());
+    renderer->render(camera, scene->world, pixels.data());
     auto end_time = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);

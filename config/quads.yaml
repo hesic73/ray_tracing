@@ -1,0 +1,16 @@
+image_width: 400
+image_height: 400
+
+fov: 80
+camera_position: [0, 0, 9]
+camera_look_at: [0, 0, 0]
+focus_dist: 1.0
+defocus_angle: 0.0
+
+samples_per_pixel: 100
+max_depth: 50
+
+gamma: 0.5
+scene: quads
+
+

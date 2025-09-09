@@ -14,5 +14,5 @@ struct Scene {
     std::vector<std::unique_ptr<Material>> materials;
 };
 
-Scene create_scene(const std::string &type, FloatType time0, FloatType time1);
+std::unique_ptr<Scene> create_scene(const std::string &type, FloatType time0, FloatType time1);
 

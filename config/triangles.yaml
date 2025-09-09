@@ -1,0 +1,16 @@
+image_width: 800
+image_height: 600
+
+fov: 40
+camera_position: [3, 1.5, 10]
+camera_look_at: [0, -0.5, 3]
+focus_dist: 1.0
+defocus_angle: 0.0
+
+samples_per_pixel: 200
+max_depth: 50
+
+gamma: 0.5
+scene: triangles
+
+
