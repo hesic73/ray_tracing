@@ -239,12 +239,12 @@ static std::unique_ptr<Scene> cornell_box_scene(FloatType time0, FloatType time1
     auto green = std::make_unique<Lambertian>(green_ptr);
     auto light = std::make_unique<DiffuseLight>(light_ptr);
 
-    scene->world.add(std::make_shared<Quad>(Point3(555, 0, 0), Vec3(0, 555, 0), Vec3(0, 0, -555), green.get()));
-    scene->world.add(std::make_shared<Quad>(Point3(0, 0, -555), Vec3(0, 555, 0), Vec3(0, 0, 555), red.get()));
-    scene->world.add(std::make_shared<Quad>(Point3(0, 0, -555), Vec3(555, 0, 0), Vec3(0, 0, 555), white.get()));
-    scene->world.add(std::make_shared<Quad>(Point3(555, 555, -555), Vec3(-555, 0, 0), Vec3(0, 0, 555), white.get()));
-    scene->world.add(std::make_shared<Quad>(Point3(0, 555, -555), Vec3(555, 0, 0), Vec3(0, 0, 555), white.get()));
-    scene->world.add(std::make_shared<Quad>(Point3(213, 554, -332), Vec3(130, 0, 0), Vec3(0, 0, 105), light.get()));
+    scene->world.add(std::make_shared<Quad>(Point3(555, 0, 0), Vec3(0, 555, 0), Vec3(0, 0, 555), green.get()));
+    scene->world.add(std::make_shared<Quad>(Point3(0, 0, 0), Vec3(0, 555, 0), Vec3(0, 0, 555), red.get()));
+    scene->world.add(std::make_shared<Quad>(Point3(343, 554, 332), Vec3(-130, 0, 0), Vec3(0, 0, -105), light.get()));
+    scene->world.add(std::make_shared<Quad>(Point3(0, 0, 0), Vec3(555, 0, 0), Vec3(0, 0, 555), white.get()));
+    scene->world.add(std::make_shared<Quad>(Point3(555, 555, 555), Vec3(-555, 0, 0), Vec3(0, 0, -555), white.get()));
+    scene->world.add(std::make_shared<Quad>(Point3(0, 0, 555), Vec3(555, 0, 0), Vec3(0, 555, 0), white.get()));
 
     scene->materials.push_back(std::move(red));
     scene->materials.push_back(std::move(white));
