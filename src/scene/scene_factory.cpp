@@ -10,6 +10,7 @@
 static std::unique_ptr<Scene> random_scene(FloatType time0, FloatType time1)
 {
     auto scene = std::make_unique<Scene>();
+    scene->background = Color(0.7, 0.8, 1.0);
     auto ground_tex = std::make_unique<SolidColorTexture>(Color(0.5, 0.5, 0.5));
     const Texture *ground_ptr = ground_tex.get();
     scene->textures.push_back(std::move(ground_tex));
@@ -75,6 +76,7 @@ static std::unique_ptr<Scene> random_scene(FloatType time0, FloatType time1)
 static std::unique_ptr<Scene> two_spheres_scene(FloatType time0, FloatType time1)
 {
     auto scene = std::make_unique<Scene>();
+    scene->background = Color(0.7, 0.8, 1.0);
     auto checker = std::make_unique<CheckerTexture>(
         std::make_unique<SolidColorTexture>(Color(0.2, 0.3, 0.1)),
         std::make_unique<SolidColorTexture>(Color(0.9, 0.9, 0.9)),
@@ -91,6 +93,7 @@ static std::unique_ptr<Scene> two_spheres_scene(FloatType time0, FloatType time1
 static std::unique_ptr<Scene> earth_scene(FloatType time0, FloatType time1)
 {
     auto scene = std::make_unique<Scene>();
+    scene->background = Color(0.7, 0.8, 1.0);
     auto earth = std::make_unique<ImageTexture>("assets/textures/earthmap.jpg");
     const Texture *earth_ptr = earth.get();
     scene->textures.push_back(std::move(earth));
@@ -103,6 +106,7 @@ static std::unique_ptr<Scene> earth_scene(FloatType time0, FloatType time1)
 static std::unique_ptr<Scene> perlin_scene(FloatType time0, FloatType time1)
 {
     auto scene = std::make_unique<Scene>();
+    scene->background = Color(0.7, 0.8, 1.0);
     auto pertext = std::make_unique<NoiseTexture>(4.0);
     const Texture *pertext_ptr = pertext.get();
     scene->textures.push_back(std::move(pertext));
@@ -116,6 +120,7 @@ static std::unique_ptr<Scene> perlin_scene(FloatType time0, FloatType time1)
 static std::unique_ptr<Scene> quads_scene(FloatType time0, FloatType time1)
 {
     auto scene = std::make_unique<Scene>();
+    scene->background = Color(0.7, 0.8, 1.0);
 
     {
         auto tex = std::make_unique<SolidColorTexture>(Color(1.0, 0.2, 0.2));
@@ -168,6 +173,7 @@ static std::unique_ptr<Scene> quads_scene(FloatType time0, FloatType time1)
 static std::unique_ptr<Scene> triangles_scene(FloatType time0, FloatType time1)
 {
     auto scene = std::make_unique<Scene>();
+    scene->background = Color(0.7, 0.8, 1.0);
 
     {
         auto ground_tex = std::make_unique<SolidColorTexture>(Color(0.8, 0.8, 0.8));
@@ -208,6 +214,46 @@ static std::unique_ptr<Scene> triangles_scene(FloatType time0, FloatType time1)
     return scene;
 }
 
+static std::unique_ptr<Scene> cornell_box_scene(FloatType time0, FloatType time1)
+{
+    auto scene = std::make_unique<Scene>();
+    scene->background = Color::black();
+
+    auto red_tex = std::make_unique<SolidColorTexture>(Color(0.65, 0.05, 0.05));
+    auto white_tex = std::make_unique<SolidColorTexture>(Color(0.73, 0.73, 0.73));
+    auto green_tex = std::make_unique<SolidColorTexture>(Color(0.12, 0.45, 0.15));
+    auto light_tex = std::make_unique<SolidColorTexture>(Color(15, 15, 15));
+
+    const Texture *red_ptr = red_tex.get();
+    const Texture *white_ptr = white_tex.get();
+    const Texture *green_ptr = green_tex.get();
+    const Texture *light_ptr = light_tex.get();
+
+    scene->textures.push_back(std::move(red_tex));
+    scene->textures.push_back(std::move(white_tex));
+    scene->textures.push_back(std::move(green_tex));
+    scene->textures.push_back(std::move(light_tex));
+
+    auto red = std::make_unique<Lambertian>(red_ptr);
+    auto white = std::make_unique<Lambertian>(white_ptr);
+    auto green = std::make_unique<Lambertian>(green_ptr);
+    auto light = std::make_unique<DiffuseLight>(light_ptr);
+
+    scene->world.add(std::make_shared<Quad>(Point3(555, 0, 0), Vec3(0, 555, 0), Vec3(0, 0, -555), green.get()));
+    scene->world.add(std::make_shared<Quad>(Point3(0, 0, -555), Vec3(0, 555, 0), Vec3(0, 0, 555), red.get()));
+    scene->world.add(std::make_shared<Quad>(Point3(0, 0, -555), Vec3(555, 0, 0), Vec3(0, 0, 555), white.get()));
+    scene->world.add(std::make_shared<Quad>(Point3(555, 555, -555), Vec3(-555, 0, 0), Vec3(0, 0, 555), white.get()));
+    scene->world.add(std::make_shared<Quad>(Point3(0, 555, -555), Vec3(555, 0, 0), Vec3(0, 0, 555), white.get()));
+    scene->world.add(std::make_shared<Quad>(Point3(213, 554, -332), Vec3(130, 0, 0), Vec3(0, 0, 105), light.get()));
+
+    scene->materials.push_back(std::move(red));
+    scene->materials.push_back(std::move(white));
+    scene->materials.push_back(std::move(green));
+    scene->materials.push_back(std::move(light));
+
+    return scene;
+}
+
 std::unique_ptr<Scene> create_scene(const std::string &type, FloatType time0, FloatType time1)
 {
     if (type == "random")
@@ -222,6 +268,8 @@ std::unique_ptr<Scene> create_scene(const std::string &type, FloatType time0, Fl
         return quads_scene(time0, time1);
     if (type == "triangles")
         return triangles_scene(time0, time1);
+    if (type == "cornell_box")
+        return cornell_box_scene(time0, time1);
     
     spdlog::warn("Unknown scene type '{}'. Returning empty scene.", type);
     return std::make_unique<Scene>();

@@ -12,6 +12,11 @@ struct Material
 
     virtual bool scatter(
         const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const = 0;
+
+    virtual Color emitted(FloatType u, FloatType v, const Point3 &p) const
+    {
+        return Color::black();
+    }
 };
 
 struct Lambertian : public Material
@@ -84,5 +89,22 @@ struct Dielectric : public Material
         r0 = r0 * r0;
         return r0 + (1 - r0) * std::pow((1 - cosine), 5);
     }
+};
+
+struct DiffuseLight : public Material
+{
+    DiffuseLight(const Texture *emit) : emit(emit) {}
+
+    bool scatter(const Ray &, const HitRecord &, Color &, Ray &) const override
+    {
+        return false;
+    }
+
+    Color emitted(FloatType u, FloatType v, const Point3 &p) const override
+    {
+        return emit->value(u, v, p);
+    }
+
+    const Texture *emit;
 };
 
