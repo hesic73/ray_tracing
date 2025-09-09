@@ -170,10 +170,10 @@ int main(int argc, char **argv)
 
     constexpr int channels = 3;
 
-    int scene_index = 0;
+    std::string scene_name = "random";
     if (config["scene"])
-        scene_index = config["scene"].as<int>();
-    auto scene = create_scene(static_cast<SceneType>(scene_index), time0, time1);
+        scene_name = config["scene"].as<std::string>();
+    auto scene = create_scene(scene_name, time0, time1);
 
     Camera camera(image_width, image_height, fov, focus_dist, defocus_angle, Mat4::identity(), time0, time1);
     camera.set_position(Vec3(camera_position[0], camera_position[1], camera_position[2]));

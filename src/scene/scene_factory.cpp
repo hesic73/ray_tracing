@@ -1,5 +1,7 @@
 #include "scene/scene_factory.h"
-#include "sphere.h"
+#include "primitives/sphere.h"
+#include "primitives/quad.h"
+#include "primitives/triangle.h"
 #include "texture.h"
 #include "rand_utils.h"
 
@@ -97,17 +99,41 @@ static Scene perlin_scene(FloatType time0, FloatType time1) {
     return scene;
 }
 
-Scene create_scene(SceneType type, FloatType time0, FloatType time1) {
-    switch (type) {
-    case SceneType::Random:
+static Scene quad_scene(FloatType time0, FloatType time1) {
+    Scene scene;
+    auto tex = std::make_unique<SolidColorTexture>(Color(0.7, 0.7, 0.7));
+    const Texture *tex_ptr = tex.get();
+    scene.textures.push_back(std::move(tex));
+    auto mat = std::make_unique<Lambertian>(tex_ptr);
+    scene.world.add(std::make_shared<Quad>(Point3(-1, 0, -1), Vec3(2, 0, 0), Vec3(0, 0, 2), mat.get()));
+    scene.materials.push_back(std::move(mat));
+    return scene;
+}
+
+static Scene triangle_scene(FloatType time0, FloatType time1) {
+    Scene scene;
+    auto tex = std::make_unique<SolidColorTexture>(Color(0.7, 0.3, 0.3));
+    const Texture *tex_ptr = tex.get();
+    scene.textures.push_back(std::move(tex));
+    auto mat = std::make_unique<Lambertian>(tex_ptr);
+    scene.world.add(std::make_shared<Triangle>(Point3(-1, 0, -1), Point3(1, 0, -1), Point3(0, 1, 0), mat.get()));
+    scene.materials.push_back(std::move(mat));
+    return scene;
+}
+
+Scene create_scene(const std::string &type, FloatType time0, FloatType time1) {
+    if (type == "random")
         return random_scene(time0, time1);
-    case SceneType::TwoSpheres:
+    if (type == "two_spheres")
         return two_spheres_scene(time0, time1);
-    case SceneType::Earth:
+    if (type == "earth")
         return earth_scene(time0, time1);
-    case SceneType::Perlin:
+    if (type == "perlin")
         return perlin_scene(time0, time1);
-    }
+    if (type == "quad")
+        return quad_scene(time0, time1);
+    if (type == "triangle")
+        return triangle_scene(time0, time1);
     return Scene{};
 }
 

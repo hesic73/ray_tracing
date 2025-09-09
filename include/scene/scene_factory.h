@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <memory>
+#include <string>
 
 #include "hittable_list.h"
 #include "material.h"
@@ -13,12 +14,5 @@ struct Scene {
     std::vector<std::unique_ptr<Material>> materials;
 };
 
-enum class SceneType {
-    Random = 0,
-    TwoSpheres = 1,
-    Earth = 2,
-    Perlin = 3
-};
-
-Scene create_scene(SceneType type, FloatType time0, FloatType time1);
+Scene create_scene(const std::string &type, FloatType time0, FloatType time1);
 
