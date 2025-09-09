@@ -8,6 +8,7 @@
 #include <cmath>
 #include "texture.h"
 #include "rand_utils.h"
+#include "bvh.h"
 
 #include <spdlog/spdlog.h>
 
@@ -365,6 +366,130 @@ static std::unique_ptr<Scene> cornell_smoke_scene(FloatType time0, FloatType tim
     return scene;
 }
 
+static std::unique_ptr<Scene> final_scene(FloatType time0, FloatType time1)
+{
+    auto scene = std::make_unique<Scene>();
+    scene->background = Color::black();
+
+    // Ground boxes
+    auto ground_tex = std::make_unique<SolidColorTexture>(Color(0.48, 0.83, 0.53));
+    const Texture *ground_ptr = ground_tex.get();
+    scene->textures.push_back(std::move(ground_tex));
+    auto ground = std::make_unique<Lambertian>(ground_ptr);
+    const Material *ground_mat = ground.get();
+    scene->materials.push_back(std::move(ground));
+
+    int boxes_per_side = 20;
+    FloatType w = 100.0;
+    for (int i = 0; i < boxes_per_side; ++i)
+    {
+        for (int j = 0; j < boxes_per_side; ++j)
+        {
+            FloatType x0 = -1000.0 + i * w;
+            FloatType z0 = -1000.0 + j * w;
+            FloatType y0 = 0.0;
+            FloatType x1 = x0 + w;
+            FloatType y1 = random_float(1.0, 101.0);
+            FloatType z1 = z0 + w;
+            scene->world.add(make_box(Point3(x0, y0, z0), Point3(x1, y1, z1), ground_mat));
+        }
+    }
+
+    // Area light
+    auto light_tex = std::make_unique<SolidColorTexture>(Color(7, 7, 7));
+    const Texture *light_ptr = light_tex.get();
+    scene->textures.push_back(std::move(light_tex));
+    auto light = std::make_unique<DiffuseLight>(light_ptr);
+    scene->world.add(std::make_shared<Quad>(Point3(123, 554, 147), Vec3(300, 0, 0), Vec3(0, 0, 265), light.get()));
+
+    // Moving sphere
+    auto sphere_tex = std::make_unique<SolidColorTexture>(Color(0.7, 0.3, 0.1));
+    const Texture *sphere_tex_ptr = sphere_tex.get();
+    scene->textures.push_back(std::move(sphere_tex));
+    auto sphere_mat = std::make_unique<Lambertian>(sphere_tex_ptr);
+    auto moving_sphere = std::make_shared<Sphere>(Point3(400, 400, 200), 50, sphere_mat.get());
+    auto move_t = std::make_shared<Transform>(Mat4::identity(), Motion(Vec3(30, 0, 0)), time0);
+    scene->world.add(std::make_shared<Instance>(moving_sphere, move_t));
+
+    // Glass and metal spheres
+    auto glass = std::make_unique<Dielectric>(1.5);
+    scene->world.add(std::make_shared<Sphere>(Point3(260, 150, 45), 50, glass.get()));
+
+    auto metal = std::make_unique<Metal>(Color(0.8, 0.8, 0.9), 1.0);
+    scene->world.add(std::make_shared<Sphere>(Point3(0, 150, 145), 50, metal.get()));
+
+    // Foggy dielectric sphere
+    auto glass2 = std::make_unique<Dielectric>(1.5);
+    auto boundary1 = std::make_shared<Sphere>(Point3(360, 150, 145), 70, glass2.get());
+    scene->world.add(boundary1);
+    auto medium_tex1 = std::make_unique<SolidColorTexture>(Color(0.2, 0.4, 0.9));
+    const Texture *medium_tex1_ptr = medium_tex1.get();
+    scene->textures.push_back(std::move(medium_tex1));
+    auto phase1 = std::make_unique<Isotropic>(medium_tex1_ptr);
+    const Material *phase1_ptr = phase1.get();
+    scene->materials.push_back(std::move(phase1));
+    scene->world.add(std::make_shared<ConstantMedium>(boundary1, 0.2, phase1_ptr));
+
+    // Global medium
+    auto glass3 = std::make_unique<Dielectric>(1.5);
+    auto boundary2 = std::make_shared<Sphere>(Point3(0, 0, 0), 5000, glass3.get());
+    auto medium_tex2 = std::make_unique<SolidColorTexture>(Color(1, 1, 1));
+    const Texture *medium_tex2_ptr = medium_tex2.get();
+    scene->textures.push_back(std::move(medium_tex2));
+    auto phase2 = std::make_unique<Isotropic>(medium_tex2_ptr);
+    const Material *phase2_ptr = phase2.get();
+    scene->materials.push_back(std::move(phase2));
+    scene->world.add(std::make_shared<ConstantMedium>(boundary2, static_cast<FloatType>(0.0001), phase2_ptr));
+
+    // Earth textured sphere
+    auto earth = std::make_unique<ImageTexture>("assets/textures/earthmap.jpg");
+    const Texture *earth_ptr = earth.get();
+    scene->textures.push_back(std::move(earth));
+    auto earth_mat = std::make_unique<Lambertian>(earth_ptr);
+    scene->world.add(std::make_shared<Sphere>(Point3(400, 200, 400), 100, earth_mat.get()));
+
+    // Perlin noise sphere
+    auto pertext = std::make_unique<NoiseTexture>(0.2);
+    const Texture *pertext_ptr = pertext.get();
+    scene->textures.push_back(std::move(pertext));
+    auto perlin_mat = std::make_unique<Lambertian>(pertext_ptr);
+    scene->world.add(std::make_shared<Sphere>(Point3(220, 280, 300), 80, perlin_mat.get()));
+
+    // Cluster of small spheres, rotated and translated
+    auto white_tex = std::make_unique<SolidColorTexture>(Color(0.73, 0.73, 0.73));
+    const Texture *white_ptr = white_tex.get();
+    scene->textures.push_back(std::move(white_tex));
+    auto white = std::make_unique<Lambertian>(white_ptr);
+    const Material *white_mat = white.get();
+    scene->materials.push_back(std::move(white));
+
+    std::vector<std::shared_ptr<Hittable>> cluster_objects;
+    int ns = 1000;
+    for (int j = 0; j < ns; ++j)
+    {
+        Point3 center(random_float(0, 165), random_float(0, 165), random_float(0, 165));
+        cluster_objects.push_back(std::make_shared<Sphere>(center, 10, white_mat));
+    }
+    auto cluster_bvh = std::make_shared<BVH>(cluster_objects, time1);
+    FloatType angle = MathUtils::degrees_to_radians(15);
+    Mat3 rot = Mat3::identity();
+    rot.m[0][0] = std::cos(angle); rot.m[0][2] = std::sin(angle);
+    rot.m[2][0] = -std::sin(angle); rot.m[2][2] = std::cos(angle);
+    auto cluster_t = std::make_shared<Transform>(Mat4::TRS(Vec3(-100, 270, 395), rot, Vec3(1, 1, 1)));
+    scene->world.add(std::make_shared<Instance>(cluster_bvh, cluster_t));
+
+    scene->materials.push_back(std::move(glass));
+    scene->materials.push_back(std::move(metal));
+    scene->materials.push_back(std::move(glass2));
+    scene->materials.push_back(std::move(glass3));
+    scene->materials.push_back(std::move(sphere_mat));
+    scene->materials.push_back(std::move(earth_mat));
+    scene->materials.push_back(std::move(perlin_mat));
+    scene->materials.push_back(std::move(light));
+
+    return scene;
+}
+
 std::unique_ptr<Scene> create_scene(const std::string &type, FloatType time0, FloatType time1)
 {
     if (type == "random")
@@ -383,6 +508,8 @@ std::unique_ptr<Scene> create_scene(const std::string &type, FloatType time0, Fl
         return cornell_box_scene(time0, time1);
     if (type == "cornell_smoke")
         return cornell_smoke_scene(time0, time1);
+    if (type == "final")
+        return final_scene(time0, time1);
     
     spdlog::warn("Unknown scene type '{}'. Returning empty scene.", type);
     return std::make_unique<Scene>();
