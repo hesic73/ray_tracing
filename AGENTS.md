@@ -28,6 +28,14 @@ Run the renderer with:
 
 ⚠️ **Note:** Rendering can be extremely time-consuming (potentially hours on a powerful desktop). Do **not** attempt to run it in a sandbox environment. Compiling alone is sufficient to check for build errors.
 
+## Project Structure
+
+- **main.cpp**: Entry point
+- **config/**: Configuration files
+- **assets/**: Assets
+- **src/**: Source implementations
+- **include/**: Header files
+- **third_party/**: Third-party dependencies (use APIs only, don't modify or read source)
 
 ## Code Style Guidelines
 

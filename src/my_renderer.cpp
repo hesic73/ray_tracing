@@ -13,7 +13,8 @@
 #include "bvh.h"
 
 #include <tbb/parallel_for.h>
-#include <tbb/blocked_range2d.h>
+#include <tbb/blocked_range.h>
+#include <tbb/partitioner.h>
 
 Color ray_color(const Ray &r, int depth, const Hittable &world)
 {
@@ -46,10 +47,10 @@ void MyRenderer::render(
     BVH bvh(objects, camera.time1);
 
     tbb::parallel_for(
-        tbb::blocked_range2d<int>(0, camera.image_height, 0, camera.image_width),
-        [&](const tbb::blocked_range2d<int>& range) {
-            for (int j = range.rows().begin(); j != range.rows().end(); ++j) {
-                for (int i = range.cols().begin(); i != range.cols().end(); ++i) {
+        tbb::blocked_range<int>(0, camera.image_height, 8),
+        [&](const tbb::blocked_range<int>& rows) {
+            for (int j = rows.begin(); j != rows.end(); ++j) {
+                for (int i = 0; i < camera.image_width; ++i) {
                     Color pixel_color_sum = Color::black();
 
                     for (int sample = 0; sample < samples_per_pixel; ++sample)
@@ -76,6 +77,7 @@ void MyRenderer::render(
                     buffer[3 * (j * camera.image_width + i) + 2] = pixel_color[2];
                 }
             }
-        }
+        },
+        tbb::static_partitioner()
     );
 }

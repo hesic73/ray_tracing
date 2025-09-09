@@ -1,11 +1,18 @@
 #include "rand_utils.h"
 
 #include <random>
+#include <thread>
+#include <chrono>
 
 FloatType random_float()
 {
-    static std::uniform_real_distribution<FloatType> distribution(0.0, 1.0);
-    static std::mt19937 generator(std::random_device{}());
+    thread_local std::mt19937 generator(
+        static_cast<unsigned int>(
+            std::hash<std::thread::id>{}(std::this_thread::get_id()) ^
+            static_cast<unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count())
+        )
+    );
+    thread_local std::uniform_real_distribution<FloatType> distribution(0.0, 1.0);
     return distribution(generator);
 }
 

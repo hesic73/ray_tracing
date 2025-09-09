@@ -26,6 +26,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(yaml-cpp)
 
 # oneTBB
+set(TBB_TEST OFF CACHE BOOL "" FORCE)
 add_subdirectory(third_party/oneTBB)
 
 file(GLOB_RECURSE SRC_FILES "src/*.cpp")
