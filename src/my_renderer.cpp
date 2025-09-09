@@ -15,6 +15,8 @@
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <tbb/partitioner.h>
+#include <atomic>
+#include "indicators/indicators.hpp"
 
 Color ray_color(const Ray &r, int depth, const Hittable &world, const Color &background)
 {
@@ -45,11 +47,30 @@ void MyRenderer::render(
     auto objects = world.objects;
     BVH bvh(objects, camera.time1);
 
+    indicators::ProgressBar progress_bar{
+        indicators::option::BarWidth{50},
+        indicators::option::Start{"["},
+        indicators::option::Fill{"█"},
+        indicators::option::Lead{"█"},
+        indicators::option::Remainder{" "},
+        indicators::option::End{"]"},
+        indicators::option::PrefixText{"Rendering "},
+        indicators::option::ForegroundColor{indicators::Color::white},
+        indicators::option::ShowElapsedTime{true},
+        indicators::option::ShowRemainingTime{true},
+        indicators::option::FontStyles{std::vector<indicators::FontStyle>{indicators::FontStyle::bold}}};
+
+    std::atomic<int> completed_rows{0};
+    const int total_rows = camera.image_height;
+
     tbb::parallel_for(
         tbb::blocked_range<int>(0, camera.image_height, 8),
-        [&](const tbb::blocked_range<int>& rows) {
-            for (int j = rows.begin(); j != rows.end(); ++j) {
-                for (int i = 0; i < camera.image_width; ++i) {
+        [&](const tbb::blocked_range<int> &rows)
+        {
+            for (int j = rows.begin(); j != rows.end(); ++j)
+            {
+                for (int i = 0; i < camera.image_width; ++i)
+                {
                     Color pixel_color_sum = Color::black();
 
                     for (int sample = 0; sample < samples_per_pixel; ++sample)
@@ -75,8 +96,13 @@ void MyRenderer::render(
                     buffer[3 * (j * camera.image_width + i) + 1] = pixel_color[1];
                     buffer[3 * (j * camera.image_width + i) + 2] = pixel_color[2];
                 }
+
+                int current_completed = completed_rows.fetch_add(1) + 1;
+                float progress = static_cast<float>(current_completed) / static_cast<float>(total_rows);
+                progress_bar.set_progress(static_cast<size_t>(progress * 100));
             }
         },
-        tbb::static_partitioner()
-    );
+        tbb::static_partitioner());
+
+    progress_bar.mark_as_completed();
 }

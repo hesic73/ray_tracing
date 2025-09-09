@@ -34,6 +34,7 @@ make
 - [stb](https://github.com/nothings/stb)
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 - [oneTBB](https://github.com/uxlfoundation/oneTBB)
+- [indicators](https://github.com/p-ranav/indicators)
 
 ## Reference
 

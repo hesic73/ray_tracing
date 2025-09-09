@@ -1,3 +1,6 @@
 [submodule "third_party/oneTBB"]
 	path = third_party/oneTBB
 	url = https://github.com/oneapi-src/oneTBB.git
+[submodule "third_party/indicators"]
+	path = third_party/indicators
+	url = https://github.com/p-ranav/indicators.git
