@@ -23,7 +23,11 @@ struct BVH : public Hittable
 
     BVH(std::vector<std::shared_ptr<Hittable>> &objects, size_t start, size_t end, FloatType time1)
     {
-        root = build(objects, start, end, time1);
+        if (start >= end) {
+            root = nullptr;
+        } else {
+            root = build(objects, start, end, time1);
+        }
     }
 
     BVH(std::vector<std::shared_ptr<Hittable>> &objects, FloatType time1)
@@ -40,8 +44,13 @@ struct BVH : public Hittable
 private:
     static std::shared_ptr<Node> build(std::vector<std::shared_ptr<Hittable>> &objects, size_t start, size_t end, FloatType time1)
     {
-        Node node;
         size_t object_span = end - start;
+        
+        if (object_span == 0) {
+            return nullptr;
+        }
+        
+        Node node;
         
         // Choose the longest axis instead of random
         int axis = 0;

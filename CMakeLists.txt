@@ -48,6 +48,14 @@ target_link_libraries(
     TBB::tbb
 )
 
+if (MSVC)
+  add_custom_command(TARGET ray_tracing POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:ray_tracing>
+            $<TARGET_FILE_DIR:ray_tracing>
+    COMMAND_EXPAND_LISTS)
+endif()
+
 add_custom_command(TARGET ray_tracing POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/assets

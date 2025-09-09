@@ -5,6 +5,8 @@
 #include "texture.h"
 #include "rand_utils.h"
 
+#include <spdlog/spdlog.h>
+
 static std::unique_ptr<Scene> random_scene(FloatType time0, FloatType time1)
 {
     auto scene = std::make_unique<Scene>();
@@ -220,5 +222,7 @@ std::unique_ptr<Scene> create_scene(const std::string &type, FloatType time0, Fl
         return quads_scene(time0, time1);
     if (type == "triangles")
         return triangles_scene(time0, time1);
+    
+    spdlog::warn("Unknown scene type '{}'. Returning empty scene.", type);
     return std::make_unique<Scene>();
 }
