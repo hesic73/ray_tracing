@@ -76,7 +76,7 @@ static Scene two_spheres_scene(FloatType time0, FloatType time1) {
 
 static Scene earth_scene(FloatType time0, FloatType time1) {
     Scene scene;
-    auto earth = std::make_unique<ImageTexture>("earthmap.jpg");
+    auto earth = std::make_unique<ImageTexture>("assets/textures/earthmap.jpg");
     const Texture *earth_ptr = earth.get();
     scene.textures.push_back(std::move(earth));
     auto mat = std::make_unique<Lambertian>(earth_ptr);
