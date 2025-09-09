@@ -6,6 +6,7 @@
 
 #include "color.h"
 #include "math/vec3.h"
+#include "perlin.h"
 
 struct Texture {
     virtual ~Texture() = default;
@@ -41,5 +42,14 @@ struct ImageTexture : public Texture {
     int width = 0;
     int height = 0;
     int bytes_per_scanline = 0;
+};
+
+struct NoiseTexture : public Texture {
+    NoiseTexture(FloatType scale = 1.0) : scale(scale) {}
+    Color value(FloatType u, FloatType v, const Point3 &p) const override {
+        return Color(1, 1, 1) * 0.5 * (1 + std::sin(scale * p.z + 10 * noise.turb(p)));
+    }
+    Perlin noise;
+    FloatType scale;
 };
 
