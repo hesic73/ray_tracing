@@ -2,6 +2,9 @@
 #include "primitives/sphere.h"
 #include "primitives/quad.h"
 #include "primitives/triangle.h"
+#include "instance.h"
+#include "math/math_utils.h"
+#include <cmath>
 #include "texture.h"
 #include "rand_utils.h"
 
@@ -15,7 +18,7 @@ static std::unique_ptr<Scene> random_scene(FloatType time0, FloatType time1)
     const Texture *ground_ptr = ground_tex.get();
     scene->textures.push_back(std::move(ground_tex));
     auto ground = std::make_unique<Lambertian>(ground_ptr);
-    scene->world.add(std::make_shared<Sphere>(Point3(0, -1000, 0), 1000, ground.get(), Motion(), time0));
+    scene->world.add(std::make_shared<Sphere>(Point3(0, -1000, 0), 1000, ground.get()));
     scene->materials.push_back(std::move(ground));
 
     for (int a = -11; a < 11; a++)
@@ -33,8 +36,9 @@ static std::unique_ptr<Scene> random_scene(FloatType time0, FloatType time1)
                     const Texture *tex_ptr = tex.get();
                     scene->textures.push_back(std::move(tex));
                     auto mat = std::make_unique<Lambertian>(tex_ptr);
-                    auto motion = Motion(Vec3(0, random_float(0, 0.5), 0));
-                    scene->world.add(std::make_shared<Sphere>(center, 0.2, mat.get(), motion, time0));
+                    auto sphere = std::make_shared<Sphere>(center, 0.2, mat.get());
+                    auto transform = std::make_shared<Transform>(Mat4::identity(), Motion(Vec3(0, random_float(0, 0.5), 0)), time0);
+                    scene->world.add(std::make_shared<Instance>(sphere, transform));
                     scene->materials.push_back(std::move(mat));
                 }
                 else if (choose_mat < 0.95)
@@ -42,13 +46,13 @@ static std::unique_ptr<Scene> random_scene(FloatType time0, FloatType time1)
                     auto albedo = Color::random(0.5, 1);
                     auto fuzz = random_float(0, 0.5);
                     auto mat = std::make_unique<Metal>(albedo, fuzz);
-                    scene->world.add(std::make_shared<Sphere>(center, 0.2, mat.get(), Motion(), time0));
+                    scene->world.add(std::make_shared<Sphere>(center, 0.2, mat.get()));
                     scene->materials.push_back(std::move(mat));
                 }
                 else
                 {
                     auto mat = std::make_unique<Dielectric>(1.5);
-                    scene->world.add(std::make_shared<Sphere>(center, 0.2, mat.get(), Motion(), time0));
+                    scene->world.add(std::make_shared<Sphere>(center, 0.2, mat.get()));
                     scene->materials.push_back(std::move(mat));
                 }
             }
@@ -56,18 +60,18 @@ static std::unique_ptr<Scene> random_scene(FloatType time0, FloatType time1)
     }
 
     auto mat1 = std::make_unique<Dielectric>(1.5);
-    scene->world.add(std::make_shared<Sphere>(Point3(0, 1, 0), 1.0, mat1.get(), Motion(), time0));
+    scene->world.add(std::make_shared<Sphere>(Point3(0, 1, 0), 1.0, mat1.get()));
     scene->materials.push_back(std::move(mat1));
 
     auto tex2 = std::make_unique<SolidColorTexture>(Color(0.4, 0.2, 0.1));
     const Texture *tex2_ptr = tex2.get();
     scene->textures.push_back(std::move(tex2));
     auto mat2 = std::make_unique<Lambertian>(tex2_ptr);
-    scene->world.add(std::make_shared<Sphere>(Point3(-4, 1, 0), 1.0, mat2.get(), Motion(), time0));
+    scene->world.add(std::make_shared<Sphere>(Point3(-4, 1, 0), 1.0, mat2.get()));
     scene->materials.push_back(std::move(mat2));
 
     auto mat3 = std::make_unique<Metal>(Color(0.7, 0.6, 0.5), 0.0);
-    scene->world.add(std::make_shared<Sphere>(Point3(4, 1, 0), 1.0, mat3.get(), Motion(), time0));
+    scene->world.add(std::make_shared<Sphere>(Point3(4, 1, 0), 1.0, mat3.get()));
     scene->materials.push_back(std::move(mat3));
 
     return scene;
@@ -84,8 +88,8 @@ static std::unique_ptr<Scene> two_spheres_scene(FloatType time0, FloatType time1
     const Texture *checker_ptr = checker.get();
     scene->textures.push_back(std::move(checker));
     auto mat = std::make_unique<Lambertian>(checker_ptr);
-    scene->world.add(std::make_shared<Sphere>(Point3(0, -10, 0), 10, mat.get(), Motion(), time0));
-    scene->world.add(std::make_shared<Sphere>(Point3(0, 10, 0), 10, mat.get(), Motion(), time0));
+    scene->world.add(std::make_shared<Sphere>(Point3(0, -10, 0), 10, mat.get()));
+    scene->world.add(std::make_shared<Sphere>(Point3(0, 10, 0), 10, mat.get()));
     scene->materials.push_back(std::move(mat));
     return scene;
 }
@@ -98,7 +102,7 @@ static std::unique_ptr<Scene> earth_scene(FloatType time0, FloatType time1)
     const Texture *earth_ptr = earth.get();
     scene->textures.push_back(std::move(earth));
     auto mat = std::make_unique<Lambertian>(earth_ptr);
-    scene->world.add(std::make_shared<Sphere>(Point3(0, 0, 0), 2, mat.get(), Motion(), time0));
+    scene->world.add(std::make_shared<Sphere>(Point3(0, 0, 0), 2, mat.get()));
     scene->materials.push_back(std::move(mat));
     return scene;
 }
@@ -111,8 +115,8 @@ static std::unique_ptr<Scene> perlin_scene(FloatType time0, FloatType time1)
     const Texture *pertext_ptr = pertext.get();
     scene->textures.push_back(std::move(pertext));
     auto mat = std::make_unique<Lambertian>(pertext_ptr);
-    scene->world.add(std::make_shared<Sphere>(Point3(0, -1000, 0), 1000, mat.get(), Motion(), time0));
-    scene->world.add(std::make_shared<Sphere>(Point3(0, 2, 0), 2, mat.get(), Motion(), time0));
+    scene->world.add(std::make_shared<Sphere>(Point3(0, -1000, 0), 1000, mat.get()));
+    scene->world.add(std::make_shared<Sphere>(Point3(0, 2, 0), 2, mat.get()));
     scene->materials.push_back(std::move(mat));
     return scene;
 }
@@ -214,6 +218,20 @@ static std::unique_ptr<Scene> triangles_scene(FloatType time0, FloatType time1)
     return scene;
 }
 
+static std::shared_ptr<Hittable> make_box(const Point3 &a, const Point3 &b, const Material *mat)
+{
+    Point3 min(std::fmin(a.x, b.x), std::fmin(a.y, b.y), std::fmin(a.z, b.z));
+    Point3 max(std::fmax(a.x, b.x), std::fmax(a.y, b.y), std::fmax(a.z, b.z));
+    auto sides = std::make_shared<HittableList>();
+    sides->add(std::make_shared<Quad>(Point3(min.x, min.y, max.z), Vec3(max.x - min.x, 0, 0), Vec3(0, max.y - min.y, 0), mat));
+    sides->add(std::make_shared<Quad>(Point3(min.x, min.y, min.z), Vec3(max.x - min.x, 0, 0), Vec3(0, max.y - min.y, 0), mat));
+    sides->add(std::make_shared<Quad>(Point3(min.x, max.y, min.z), Vec3(max.x - min.x, 0, 0), Vec3(0, 0, max.z - min.z), mat));
+    sides->add(std::make_shared<Quad>(Point3(min.x, min.y, min.z), Vec3(0, 0, max.z - min.z), Vec3(0, max.y - min.y, 0), mat));
+    sides->add(std::make_shared<Quad>(Point3(max.x, min.y, min.z), Vec3(0, 0, max.z - min.z), Vec3(0, max.y - min.y, 0), mat));
+    sides->add(std::make_shared<Quad>(Point3(min.x, min.y, max.z), Vec3(0, 0, -(max.z - min.z)), Vec3(0, max.y - min.y, 0), mat));
+    return sides;
+}
+
 static std::unique_ptr<Scene> cornell_box_scene(FloatType time0, FloatType time1)
 {
     auto scene = std::make_unique<Scene>();
@@ -245,6 +263,23 @@ static std::unique_ptr<Scene> cornell_box_scene(FloatType time0, FloatType time1
     scene->world.add(std::make_shared<Quad>(Point3(0, 0, 0), Vec3(555, 0, 0), Vec3(0, 0, 555), white.get()));
     scene->world.add(std::make_shared<Quad>(Point3(555, 555, 555), Vec3(-555, 0, 0), Vec3(0, 0, -555), white.get()));
     scene->world.add(std::make_shared<Quad>(Point3(0, 0, 555), Vec3(555, 0, 0), Vec3(0, 555, 0), white.get()));
+
+    auto box1 = make_box(Point3(0, 0, 0), Point3(165, 330, 165), white.get());
+    auto box2 = make_box(Point3(0, 0, 0), Point3(165, 165, 165), white.get());
+
+    FloatType angle1 = MathUtils::degrees_to_radians(-18);
+    Mat3 rot1 = Mat3::identity();
+    rot1.m[0][0] = std::cos(angle1); rot1.m[0][2] = std::sin(angle1);
+    rot1.m[2][0] = -std::sin(angle1); rot1.m[2][2] = std::cos(angle1);
+    auto t1 = std::make_shared<Transform>(Mat4::TRS(Vec3(265, 0, 295), rot1, Vec3(1, 1, 1)));
+    scene->world.add(std::make_shared<Instance>(box1, t1));
+
+    FloatType angle2 = MathUtils::degrees_to_radians(15);
+    Mat3 rot2 = Mat3::identity();
+    rot2.m[0][0] = std::cos(angle2); rot2.m[0][2] = std::sin(angle2);
+    rot2.m[2][0] = -std::sin(angle2); rot2.m[2][2] = std::cos(angle2);
+    auto t2 = std::make_shared<Transform>(Mat4::TRS(Vec3(130, 0, 65), rot2, Vec3(1, 1, 1)));
+    scene->world.add(std::make_shared<Instance>(box2, t2));
 
     scene->materials.push_back(std::move(red));
     scene->materials.push_back(std::move(white));
