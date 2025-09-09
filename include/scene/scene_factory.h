@@ -16,7 +16,8 @@ struct Scene {
 enum class SceneType {
     Random = 0,
     TwoSpheres = 1,
-    Earth = 2
+    Earth = 2,
+    Perlin = 3
 };
 
 Scene create_scene(SceneType type, FloatType time0, FloatType time1);

@@ -1,9 +1,11 @@
 #pragma once
 
+#include <array>
 #include <cmath>
 #include <string>
 #include "common.h"
 
+struct Perlin;
 struct Vec3;
 
 Vec3 operator+(const Vec3 &u, const Vec3 &v);
@@ -131,7 +133,10 @@ struct Vec3
     }
 
 private:
-    Vec3() {}
+    Vec3() = default;
+    friend struct Perlin;
+template <typename, std::size_t>
+    friend struct std::array;
 };
 
 using Point3 = Vec3; // 3D point

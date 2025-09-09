@@ -85,6 +85,18 @@ static Scene earth_scene(FloatType time0, FloatType time1) {
     return scene;
 }
 
+static Scene perlin_scene(FloatType time0, FloatType time1) {
+    Scene scene;
+    auto pertext = std::make_unique<NoiseTexture>(4.0);
+    const Texture *pertext_ptr = pertext.get();
+    scene.textures.push_back(std::move(pertext));
+    auto mat = std::make_unique<Lambertian>(pertext_ptr);
+    scene.world.add(std::make_shared<Sphere>(Point3(0, -1000, 0), 1000, mat.get(), Motion(), time0));
+    scene.world.add(std::make_shared<Sphere>(Point3(0, 2, 0), 2, mat.get(), Motion(), time0));
+    scene.materials.push_back(std::move(mat));
+    return scene;
+}
+
 Scene create_scene(SceneType type, FloatType time0, FloatType time1) {
     switch (type) {
     case SceneType::Random:
@@ -93,6 +105,8 @@ Scene create_scene(SceneType type, FloatType time0, FloatType time1) {
         return two_spheres_scene(time0, time1);
     case SceneType::Earth:
         return earth_scene(time0, time1);
+    case SceneType::Perlin:
+        return perlin_scene(time0, time1);
     }
     return Scene{};
 }
