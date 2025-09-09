@@ -11,6 +11,7 @@ public:
     void render(
         const Camera &camera,
         const HittableList &world,
+        const Color &background,
         std::uint8_t *buffer) const override;
 private:
     int samples_per_pixel;
