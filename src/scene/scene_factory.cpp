@@ -267,14 +267,14 @@ static std::unique_ptr<Scene> cornell_box_scene(FloatType time0, FloatType time1
     auto box1 = make_box(Point3(0, 0, 0), Point3(165, 330, 165), white.get());
     auto box2 = make_box(Point3(0, 0, 0), Point3(165, 165, 165), white.get());
 
-    FloatType angle1 = MathUtils::degrees_to_radians(-18);
+    FloatType angle1 = MathUtils::degrees_to_radians(15);
     Mat3 rot1 = Mat3::identity();
     rot1.m[0][0] = std::cos(angle1); rot1.m[0][2] = std::sin(angle1);
     rot1.m[2][0] = -std::sin(angle1); rot1.m[2][2] = std::cos(angle1);
     auto t1 = std::make_shared<Transform>(Mat4::TRS(Vec3(265, 0, 295), rot1, Vec3(1, 1, 1)));
     scene->world.add(std::make_shared<Instance>(box1, t1));
 
-    FloatType angle2 = MathUtils::degrees_to_radians(15);
+    FloatType angle2 = MathUtils::degrees_to_radians(-18);
     Mat3 rot2 = Mat3::identity();
     rot2.m[0][0] = std::cos(angle2); rot2.m[0][2] = std::sin(angle2);
     rot2.m[2][0] = -std::sin(angle2); rot2.m[2][2] = std::cos(angle2);
