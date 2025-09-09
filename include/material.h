@@ -108,3 +108,17 @@ struct DiffuseLight : public Material
     const Texture *emit;
 };
 
+struct Isotropic : public Material
+{
+    Isotropic(const Texture *albedo) : albedo(albedo) {}
+
+    bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const override
+    {
+        scattered = Ray(rec.point, random_unit_sphere(), r_in.time);
+        attenuation = albedo->value(rec.u, rec.v, rec.point);
+        return true;
+    }
+
+    const Texture *albedo;
+};
+
