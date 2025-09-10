@@ -16,6 +16,7 @@
 #include <tbb/blocked_range.h>
 #include <tbb/partitioner.h>
 #include <atomic>
+#include <cmath>
 #include "indicators/indicators.hpp"
 
 Color ray_color(const Ray &r, int depth, const Hittable &world, const Color &background)
@@ -63,29 +64,67 @@ void MyRenderer::render(
     std::atomic<int> completed_rows{0};
     const int total_rows = camera.image_height;
 
+
+    const int sqrt_spp = static_cast<int>(std::sqrt(samples_per_pixel));
+    const int actual_samples = sqrt_spp * sqrt_spp;
+    const int remaining_samples = samples_per_pixel - actual_samples;
+    const FloatType inv_sqrt_spp = static_cast<FloatType>(1.0) / static_cast<FloatType>(sqrt_spp);
+    const FloatType inv_image_width = static_cast<FloatType>(1.0) / camera.image_width;
+    const FloatType inv_image_height = static_cast<FloatType>(1.0) / camera.image_height;
+    const FloatType inv_samples_per_pixel = static_cast<FloatType>(1.0) / static_cast<FloatType>(samples_per_pixel);
+
     tbb::parallel_for(
         tbb::blocked_range<int>(0, camera.image_height, 8),
         [&](const tbb::blocked_range<int> &rows)
         {
             for (int j = rows.begin(); j != rows.end(); ++j)
             {
+                // Pre-calculate pixel row coordinate
+                const FloatType pixel_v_base = static_cast<FloatType>(1.0) - (static_cast<FloatType>(j) + static_cast<FloatType>(0.5)) * inv_image_height;
+                
                 for (int i = 0; i < camera.image_width; ++i)
                 {
                     Color pixel_color_sum = Color::black();
 
-                    for (int sample = 0; sample < samples_per_pixel; ++sample)
+                    // Pre-calculate pixel column coordinate
+                    const FloatType pixel_u_base = (static_cast<FloatType>(i) + static_cast<FloatType>(0.5)) * inv_image_width;
+                    
+                    // Sample from each stratum
+                    for (int stratum_j = 0; stratum_j < sqrt_spp; ++stratum_j)
                     {
-                        FloatType random_u = random_float() - static_cast<FloatType>(0.5); // [-0.5, 0.5)
-                        FloatType random_v = random_float() - static_cast<FloatType>(0.5); // [-0.5, 0.5)
+                        const FloatType stratum_j_offset = static_cast<FloatType>(stratum_j) * inv_sqrt_spp - static_cast<FloatType>(0.5);
+                        
+                        for (int stratum_i = 0; stratum_i < sqrt_spp; ++stratum_i)
+                        {
+                            const FloatType stratum_i_offset = static_cast<FloatType>(stratum_i) * inv_sqrt_spp - static_cast<FloatType>(0.5);
+                            
+                            FloatType random_u = random_float();
+                            FloatType random_v = random_float();
+                            FloatType stratum_u = stratum_i_offset + random_u * inv_sqrt_spp;
+                            FloatType stratum_v = stratum_j_offset + random_v * inv_sqrt_spp;
 
-                        FloatType u = (static_cast<FloatType>(i) + static_cast<FloatType>(0.5) + random_u) / camera.image_width;
-                        FloatType v = static_cast<FloatType>(1.0) - (static_cast<FloatType>(j) + static_cast<FloatType>(0.5) + random_v) / camera.image_height; // flip v for image coordinates
+                            FloatType u = pixel_u_base + stratum_u * inv_image_width;
+                            FloatType v = pixel_v_base - stratum_v * inv_image_height; // flip v for image coordinates
+
+                            Ray r = camera.get_ray(u, v);
+                            pixel_color_sum += ray_color(r, max_depth, bvh, background);
+                        }
+                    }
+                    
+                    // Handle remaining samples if samples_per_pixel is not a perfect square
+                    for (int sample = 0; sample < remaining_samples; ++sample)
+                    {
+                        FloatType random_u = random_float() - static_cast<FloatType>(0.5);
+                        FloatType random_v = random_float() - static_cast<FloatType>(0.5);
+
+                        FloatType u = pixel_u_base + random_u * inv_image_width;
+                        FloatType v = pixel_v_base - random_v * inv_image_height; // flip v for image coordinates
 
                         Ray r = camera.get_ray(u, v);
                         pixel_color_sum += ray_color(r, max_depth, bvh, background);
                     }
 
-                    pixel_color_sum = pixel_color_sum / static_cast<FloatType>(samples_per_pixel);
+                    pixel_color_sum = pixel_color_sum * inv_samples_per_pixel;
 
                     // Gamma correction
                     pixel_color_sum = Color::pow(pixel_color_sum, gamma);
