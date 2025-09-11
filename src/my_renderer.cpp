@@ -51,12 +51,14 @@ void MyRenderer::render(
     indicators::ProgressBar progress_bar{
         indicators::option::BarWidth{50},
         indicators::option::Start{"["},
-        indicators::option::Fill{"█"},
-        indicators::option::Lead{"█"},
-        indicators::option::Remainder{" "},
+        indicators::option::Fill{"="},
+        indicators::option::Lead{">"},
+        indicators::option::Remainder{"-"},
         indicators::option::End{"]"},
         indicators::option::PrefixText{"Rendering "},
-        indicators::option::ForegroundColor{indicators::Color::white},
+        indicators::option::PostfixText{" Complete"},
+        indicators::option::ForegroundColor{indicators::Color::green},
+        indicators::option::ShowPercentage{true},
         indicators::option::ShowElapsedTime{true},
         indicators::option::ShowRemainingTime{true},
         indicators::option::FontStyles{std::vector<indicators::FontStyle>{indicators::FontStyle::bold}}};
